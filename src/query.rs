@@ -2,60 +2,81 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
 #[derive(
-    Default, Clone, Serialize, Deserialize, dict_derive::FromPyObject, dict_derive::IntoPyObject,
+    Default,
+    Serialize,
+    Deserialize,
+    Clone,
+    Debug,
+    dict_derive::FromPyObject,
+    dict_derive::IntoPyObject,
 )]
-pub struct TraceSelection {
+pub struct ReceiptSelection {
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "from")]
-    pub from_: Option<Vec<String>>,
+    pub root_contract_id: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub to: Option<Vec<String>>,
+    pub to_address: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub call_type: Option<Vec<String>>,
+    pub asset_id: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub reward_type: Option<Vec<String>>,
+    pub receipt_type: Option<Vec<u8>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "type")]
-    pub type_: Option<Vec<String>>,
+    pub sender: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sighash: Option<Vec<String>>,
+    pub recipient: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub contract_id: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ra: Option<Vec<u64>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rb: Option<Vec<u64>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rc: Option<Vec<u64>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rd: Option<Vec<u64>>,
 }
 
 #[derive(
-    Default, Clone, Serialize, Deserialize, dict_derive::FromPyObject, dict_derive::IntoPyObject,
+    Default,
+    Serialize,
+    Deserialize,
+    Clone,
+    Debug,
+    dict_derive::FromPyObject,
+    dict_derive::IntoPyObject,
 )]
-pub struct LogSelection {
-    /// Address of the contract, any logs that has any of these addresses will be returned.
-    /// Empty means match all.
+pub struct InputSelection {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub address: Option<Vec<String>>,
-    /// Topics to match, each member of the top level array is another array, if the nth topic matches any
-    ///  topic specified in topics[n] the log will be returned. Empty means match all.
+    pub owner: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub topics: Option<Vec<Vec<String>>>,
+    pub asset_id: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub contract: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sender: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub recipient: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub input_type: Vec<u8>,
 }
 
 #[derive(
-    Default, Clone, Serialize, Deserialize, dict_derive::FromPyObject, dict_derive::IntoPyObject,
+    Default,
+    Serialize,
+    Deserialize,
+    Clone,
+    Debug,
+    dict_derive::FromPyObject,
+    dict_derive::IntoPyObject,
 )]
-pub struct TransactionSelection {
-    /// Address the transaction should originate from. If transaction.from matches any of these, the transaction
-    ///  will be returned. Keep in mind that this has an and relationship with to filter, so each transaction should
-    ///  match both of them. Empty means match all.
+pub struct OutputSelection {
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "from")]
-    pub from_: Option<Vec<String>>,
-    /// Address the transaction should go to. If transaction.to matches any of these, the transaction will
-    ///  be returned. Keep in mind that this has an and relationship with from filter, so each transaction should
-    ///  match both of them. Empty means match all.
+    pub to: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub to: Option<Vec<String>>,
-    /// If first 4 bytes of transaction input matches any of these, transaction will be returned. Empty means match all.
+    pub asset_id: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sighash: Option<Vec<String>>,
-    /// If tx.status matches this it will be returned.
+    pub contract: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub status: Option<i64>,
+    pub output_type: Vec<u8>,
 }
 
 #[derive(
@@ -67,17 +88,25 @@ pub struct FieldSelection {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub transaction: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub log: Option<Vec<String>>,
+    pub receipt: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub trace: Option<Vec<String>>,
+    pub input: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub output: Option<Vec<String>>,
 }
 
 #[derive(
-    Default, Clone, Serialize, Deserialize, dict_derive::FromPyObject, dict_derive::IntoPyObject,
+    Default,
+    Serialize,
+    Deserialize,
+    Clone,
+    Debug,
+    dict_derive::FromPyObject,
+    dict_derive::IntoPyObject,
 )]
 pub struct Query {
     /// The block to start the query from
-    pub from_block: i64,
+    pub from_block: u64,
     /// The block to end the query at. If not specified, the query will go until the
     ///  end of data. Exclusive, the returned range will be [from_block..to_block).
     ///
@@ -86,43 +115,36 @@ pub struct Query {
     ///  next_block field in the response into from_block field of their next query. This implements
     ///  pagination.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub to_block: Option<i64>,
-    /// List of log selections, these have an or relationship between them, so the query will return logs
-    /// that match any of these selections.
+    pub to_block: Option<u64>,
+    /// List of receipt selections, the query will return receipts that match any of these selections and
+    ///  it will return receipts that are related to the returned objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub logs: Option<Vec<LogSelection>>,
-    /// List of transaction selections, the query will return transactions that match any of these selections and
-    ///  it will return transactions that are related to the returned logs.
+    pub receipts: Option<Vec<ReceiptSelection>>,
+    /// List of input selections, the query will return inputs that match any of these selections and
+    ///  it will return inputs that are related to the returned objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub transactions: Option<Vec<TransactionSelection>>,
-    /// List of trace selections, the query will return traces that match any of these selections and
-    ///  it will return traces that are related to the returned logs.
+    pub inputs: Option<Vec<InputSelection>>,
+    /// List of output selections, the query will return outputs that match any of these selections and
+    ///  it will return outputs that are related to the returned objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub traces: Option<Vec<TraceSelection>>,
-    /// Weather to include all blocks regardless of if they are related to a returned transaction or log. Normally
+    pub outputs: Option<Vec<OutputSelection>>,
+    /// Whether to include all blocks regardless of if they are related to a returned transaction or log. Normally
     ///  the server will return only the blocks that are related to the transaction or logs in the response. But if this
     ///  is set to true, the server will return data for all blocks in the requested range [from_block, to_block).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub include_all_blocks: Option<bool>,
     /// Field selection. The user can select which fields they are interested in, requesting less fields will improve
     ///  query execution time and reduce the payload size so the user should always use a minimal number of fields.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub field_selection: FieldSelection,
     /// Maximum number of blocks that should be returned, the server might return more blocks than this number but
     ///  it won't overshoot by too much.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub max_num_blocks: Option<i64>,
+    pub max_num_blocks: Option<usize>,
     /// Maximum number of transactions that should be returned, the server might return more transactions than this number but
     ///  it won't overshoot by too much.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub max_num_transactions: Option<i64>,
-    /// Maximum number of logs that should be returned, the server might return more logs than this number but
-    ///  it won't overshoot by too much.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub max_num_logs: Option<i64>,
-    /// Maximum number of traces that should be returned, the server might return more traces than this number but
-    ///  it won't overshoot by too much.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub max_num_traces: Option<i64>,
+    pub max_num_transactions: Option<usize>,
 }
 
 impl Query {
