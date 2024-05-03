@@ -203,6 +203,12 @@ class HypersyncClient:
 
     async def get_data(self, query: Query) -> any:
         return await self.inner.get_data(asdict(query))
+    
+    async def get_selected_data(self, query: Query) -> any:
+        return await self.inner.get_selected_data(asdict(query))
+    
+    async def preset_query_get_logs(self, emitting_contracts: list[str], from_block: int, to_block: Optional[int]) -> any:
+        return await self.inner.preset_query_get_logs(emitting_contracts, from_block, to_block)
 
 
     

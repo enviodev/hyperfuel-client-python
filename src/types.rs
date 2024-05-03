@@ -1,4 +1,4 @@
-use pyo3::{ffi, pyclass, pymethods, IntoPy, PyObject, PyResult, PyTraverseError, PyVisit, Python};
+use pyo3::pyclass;
 
 /// The block header contains metadata about a certain block.
 #[pyclass]
@@ -68,7 +68,7 @@ pub struct Transaction {
     pub tx_pointer_block_height: Option<u64>,
     pub tx_pointer_tx_index: Option<u64>,
     /// Script, creating a new contract, or minting new coins
-    pub tx_type: TransactionType,
+    pub tx_type: u8,
     /// The index of the input from a transaction that changed the state of a contract.
     pub output_contract_input_index: Option<u64>,
     /// The root of amount of coins owned by contract after transaction execution from a transaction that changed the state of a contract.
@@ -80,7 +80,7 @@ pub struct Transaction {
     /// The root of the receipts.
     pub receipts_root: Option<String>,
     /// The status type of the transaction.
-    pub status: TransactionStatus,
+    pub status: u8,
     /// for SubmittedStatus, SuccessStatus, and FailureStatus, the time a transaction was submitted, successful, or failed
     pub time: u64,
     /// for SuccessStatus, the state of the program execution
@@ -149,7 +149,7 @@ pub struct Receipt {
     /// The length of the receipt.
     pub len: Option<u64>,
     /// The type of receipt.
-    pub receipt_type: ReceiptType,
+    pub receipt_type: u8,
     /// 0 if script exited successfully, any otherwise.
     pub result: Option<u64>,
     /// The amount of gas consumed by the script.
@@ -178,7 +178,7 @@ pub struct Input {
     /// block that the input originated in
     pub block_height: u64,
     /// InputCoin, InputContract, or InputMessage
-    pub input_type: InputType,
+    pub input_type: u8,
     /// A unique 32 byte identifier for the UTXO.
     pub utxo_id: Option<String>,
     /// The owning address or predicate root.
@@ -225,7 +225,7 @@ pub struct Output {
     /// block that the output originated in
     pub block_height: u64,
     /// CoinOutput, ContractOutput, ChangeOutput, VariableOutput, or ContractCreated
-    pub output_type: OutputType,
+    pub output_type: u8,
     /// The address the coins were sent to.
     pub to: Option<String>,
     /// The amount of coins in the output.

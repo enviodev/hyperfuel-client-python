@@ -46,17 +46,17 @@ pub struct ReceiptSelection {
 )]
 pub struct InputSelection {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub owner: Vec<String>,
+    pub owner: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub asset_id: Vec<String>,
+    pub asset_id: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub contract: Vec<String>,
+    pub contract: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sender: Vec<String>,
+    pub sender: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub recipient: Vec<String>,
+    pub recipient: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub input_type: Vec<u8>,
+    pub input_type: Option<Vec<u8>>,
 }
 
 #[derive(
@@ -70,17 +70,23 @@ pub struct InputSelection {
 )]
 pub struct OutputSelection {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub to: Vec<String>,
+    pub to: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub asset_id: Vec<String>,
+    pub asset_id: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub contract: Vec<String>,
+    pub contract: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub output_type: Vec<u8>,
+    pub output_type: Option<Vec<u8>>,
 }
 
 #[derive(
-    Default, Clone, Serialize, Deserialize, dict_derive::FromPyObject, dict_derive::IntoPyObject,
+    Default,
+    Debug,
+    Clone,
+    Serialize,
+    Deserialize,
+    dict_derive::FromPyObject,
+    dict_derive::IntoPyObject,
 )]
 pub struct FieldSelection {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -135,7 +141,6 @@ pub struct Query {
     pub include_all_blocks: Option<bool>,
     /// Field selection. The user can select which fields they are interested in, requesting less fields will improve
     ///  query execution time and reduce the payload size so the user should always use a minimal number of fields.
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub field_selection: FieldSelection,
     /// Maximum number of blocks that should be returned, the server might return more blocks than this number but
     ///  it won't overshoot by too much.
@@ -148,16 +153,16 @@ pub struct Query {
 }
 
 impl Query {
-    pub fn try_convert(&self) -> Result<skar_net_types::Query> {
+    pub fn try_convert(&self) -> Result<skar_net_types_fuel::Query> {
         let json = serde_json::to_vec(self).context("serialize to json")?;
         serde_json::from_slice(&json).context("parse json")
     }
 }
 
-impl TryFrom<skar_net_types::Query> for Query {
+impl TryFrom<skar_net_types_fuel::Query> for Query {
     type Error = anyhow::Error;
 
-    fn try_from(skar_query: skar_net_types::Query) -> Result<Self> {
+    fn try_from(skar_query: skar_net_types_fuel::Query) -> Result<Self> {
         let json = serde_json::to_vec(&skar_query).context("serialize query to json")?;
         serde_json::from_slice(&json).context("parse json")
     }

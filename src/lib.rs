@@ -1,11 +1,24 @@
-use std::sync::Arc;
 use anyhow::{Context, Result};
+use arrow2::datatypes::Field;
+use arrow2::ffi;
+use arrow2::{array::StructArray, datatypes::DataType};
+use pyo3::ffi::Py_uintptr_t;
+use pyo3_asyncio::tokio::future_into_py;
+use response::{QueryArrowResponse, QueryResponseArrow};
+use skar_client_fuel::{ArrowBatch, QueryResponseTyped};
+use std::sync::Arc;
 
 mod config;
 mod query;
+mod response;
 mod types;
 
-use pyo3::prelude::*;
+use pyo3::{
+    exceptions::{PyIOError, PyValueError},
+    prelude::*,
+};
+
+pub use config::Config;
 
 #[pymodule]
 fn hypersync(_py: Python, m: &PyModule) -> PyResult<()> {
@@ -13,17 +26,17 @@ fn hypersync(_py: Python, m: &PyModule) -> PyResult<()> {
 }
 #[pyclass]
 pub struct HypersyncClient {
-    inner: Arc<skar_client::Client>,
+    inner: Arc<skar_client_fuel::Client>,
 }
 
 impl HypersyncClient {
-    fn new_impl(config: config::Config) -> Result<HypersyncClient> {
+    fn new_impl(config: Config) -> Result<HypersyncClient> {
         env_logger::try_init().ok();
 
         let config = config.try_convert().context("parse config")?;
 
         Ok(HypersyncClient {
-            inner: Arc::new(skar_client::Client::new(config).context("create client")?),
+            inner: Arc::new(skar_client_fuel::Client::new(config).context("create client")?),
         })
     }
 }
@@ -34,19 +47,6 @@ impl HypersyncClient {
     #[new]
     fn new(config: Config) -> PyResult<HypersyncClient> {
         Self::new_impl(config).map_err(|e| PyIOError::new_err(format!("{:?}", e)))
-    }
-
-    /// Get the height of the source hypersync instance
-    pub fn get_height<'py>(&'py self, py: Python<'py>) -> PyResult<&'py PyAny> {
-        let inner = Arc::clone(&self.inner);
-        future_into_py::<_, u64>(py, async move {
-            let height: u64 = inner
-                .get_height()
-                .await
-                .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
-
-            Ok(height)
-        })
     }
 
     /// Get the height of the source hypersync instance
@@ -84,8 +84,8 @@ impl HypersyncClient {
     /// Path should point to a folder that will contain the parquet files in the end.
     pub fn create_parquet_folder<'py>(
         &'py self,
-        query: Query,
-        path: string,
+        query: query::Query,
+        path: String,
         py: Python<'py>,
     ) -> PyResult<&'py PyAny> {
         let inner = Arc::clone(&self.inner);
@@ -104,62 +104,93 @@ impl HypersyncClient {
         })
     }
 
+    // TODO: comments
+
     /// Send a query request to the source hypersync instance.
     ///
     /// Returns a query response which contains structure query response data joined on transaction.
     /// Format can be ArrowIpc.
-    pub fn get_data<'py>(&'py, query: Query, py: Python<'py>) -> PyResult<&'py PyAny> {
-        
-        future_into_py::<_, QueryResponse>(py, async move {
-        
-            let query = query
-                .try_convert()
-                .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
-
-            let res = inner
-                .get_data::<skar_client::ArrowIpc>(&query)
-                .await
-                .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
-
-            let res = convert_response_to_query_response(res)
-                .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
-
-            Ok(res)
-        })
-    }
-
-    /* Old stuff, for reference
-/// Send a query request to the source hypersync instance.
-    ///
-    /// Returns a query response which contains structure query response data joined on transaction.
-    /// Format can be ArrowIpc.
-    /// Send a query request to the source hypersync instance.
-    ///
-    /// Returns a query response which contains block, tx and log data.
-    pub fn send_req<'py>(&'py self, query: Query, py: Python<'py>) -> PyResult<&'py PyAny> {
+    pub fn get_data<'py>(&'py self, query: query::Query, py: Python<'py>) -> PyResult<&'py PyAny> {
         let inner = Arc::clone(&self.inner);
 
-        future_into_py::<_, QueryResponse>(py, async move {
+        future_into_py::<_, QueryResponseTyped>(py, async move {
             let query = query
                 .try_convert()
                 .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
 
             let res = inner
-                .send::<skar_client::ArrowIpc>(&query)
+                .get_data(&query)
                 .await
                 .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
 
-            let res = convert_response_to_query_response(res)
-                .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
+            // let res = convert_response_to_query_response(res)
+            //     .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
 
             Ok(res)
         })
     }
 
-    /// Send a query request to the source hypersync instance.
-    ///
-    /// Returns a query response which contains block, tx and log data in pyarrow table.
-    pub fn send_req_arrow<'py>(&'py self, query: Query, py: Python<'py>) -> PyResult<&'py PyAny> {
+    pub fn get_selected_data<'py>(
+        &'py self,
+        query: query::Query,
+        py: Python<'py>,
+    ) -> PyResult<&'py PyAny> {
+        let inner = Arc::clone(&self.inner);
+
+        future_into_py::<_, QueryResponseTyped>(py, async move {
+            let query = query
+                .try_convert()
+                .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
+
+            let res = inner
+                .get_selected_data(&query)
+                .await
+                .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
+
+            // let res = convert_response_to_query_response(res)
+            //     .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
+
+            Ok(res)
+        })
+    }
+
+    pub fn preset_query_get_logs<'py>(
+        &'py self,
+        emitting_contracts: Vec<String>,
+        from_block: u64,
+        to_block: Option<u64>,
+        py: Python<'py>,
+    ) -> PyResult<&'py PyAny> {
+        let inner = Arc::clone(&self.inner);
+
+        // cut the "0x" off the address
+        let emitting_contracts_args = vec![];
+        for contract_address in emitting_contracts {
+            let address: &str = if &contract_address[..2] == "0x" {
+                &contract_address[2..]
+            } else {
+                &contract_address
+            };
+            let address = hex_str_address_to_byte_array(address)
+                .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
+            emitting_contracts_args.push(address)
+        }
+
+        future_into_py::<_, LogResponse>(py, async move {
+            let res = inner
+                .preset_query_get_logs(emitting_contracts_args, from_block, to_block)
+                .await
+                .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
+
+            Ok(res)
+        })
+    }
+
+    pub fn get_arrow_data<'py>(
+        &'py self,
+        query: query::Query,
+        py: Python<'py>,
+    ) -> PyResult<&'py PyAny> {
         // initialize an array
         let inner = Arc::clone(&self.inner);
 
@@ -169,20 +200,31 @@ impl HypersyncClient {
                 .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
 
             let res = inner
-                .send::<skar_client::ArrowIpc>(&query)
+                .get_arrow_data(&query)
                 .await
                 .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
 
             let blocks = res.data.blocks;
             let transactions = res.data.transactions;
-            let logs = res.data.logs;
+            let receipts = res.data.receipts;
+            let inputs = res.data.inputs;
+            let outputs = res.data.outputs;
 
-            let (blocks, transactions, logs) = Python::with_gil(|py| {
+            let (blocks, transactions, receipts, inputs, outputs) = Python::with_gil(|py| {
                 let pyarrow = py.import("pyarrow")?;
                 let blocks = convert_batch_to_pyarrow_table(py, pyarrow, blocks)?;
                 let transactions = convert_batch_to_pyarrow_table(py, pyarrow, transactions)?;
-                let logs = convert_batch_to_pyarrow_table(py, pyarrow, logs)?;
-                Ok::<(PyObject, PyObject, PyObject), PyErr>((blocks, transactions, logs))
+                let receipts = convert_batch_to_pyarrow_table(py, pyarrow, receipts)?;
+                let inputs = convert_batch_to_pyarrow_table(py, pyarrow, inputs)?;
+                let outputs = convert_batch_to_pyarrow_table(py, pyarrow, outputs)?;
+
+                Ok::<(PyObject, PyObject, PyObject, PyObject, PyObject), PyErr>((
+                    blocks,
+                    transactions,
+                    receipts,
+                    inputs,
+                    outputs,
+                ))
             })?;
 
             let query_response = compose_pyarrow_response(
@@ -191,7 +233,9 @@ impl HypersyncClient {
                 res.total_execution_time,
                 blocks,
                 transactions,
-                logs,
+                receipts,
+                inputs,
+                outputs,
             )
             .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
 
@@ -199,161 +243,137 @@ impl HypersyncClient {
         })
     }
 
-    /// Send a event query request to the source hypersync instance.
-    ///
-    /// This executes the same query as send_events_req function on the source side but
-    /// it groups data for each event(log) so it is easier to process it.
-    pub fn send_events_req<'py>(&'py self, query: Query, py: Python<'py>) -> PyResult<&'py PyAny> {
+    pub fn get_arrow_data_with_retry<'py>(
+        &'py self,
+        query: query::Query,
+        py: Python<'py>,
+    ) -> PyResult<&'py PyAny> {
+        // initialize an array
         let inner = Arc::clone(&self.inner);
 
-        future_into_py::<_, Events>(py, async move {
-            let mut query = query
+        future_into_py::<_, QueryResponseArrow>(py, async move {
+            let query = query
                 .try_convert()
                 .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
 
-            if !query.field_selection.block.is_empty() {
-                for field in BLOCK_JOIN_FIELDS.iter() {
-                    query.field_selection.block.insert(field.to_string());
-                }
-            }
-
-            if !query.field_selection.transaction.is_empty() {
-                for field in TX_JOIN_FIELDS.iter() {
-                    query.field_selection.transaction.insert(field.to_string());
-                }
-            }
-
-            if !query.field_selection.log.is_empty() {
-                for field in LOG_JOIN_FIELDS.iter() {
-                    query.field_selection.log.insert(field.to_string());
-                }
-            }
-
             let res = inner
-                .send::<skar_client::ArrowIpc>(&query)
+                .get_arrow_data_with_retry(&query)
                 .await
                 .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
 
-            let res = convert_response_to_events(res)
-                .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
+            let blocks = res.data.blocks;
+            let transactions = res.data.transactions;
+            let receipts = res.data.receipts;
+            let inputs = res.data.inputs;
+            let outputs = res.data.outputs;
 
-            Ok(res)
+            let (blocks, transactions, receipts, inputs, outputs) = Python::with_gil(|py| {
+                let pyarrow = py.import("pyarrow")?;
+                let blocks = convert_batch_to_pyarrow_table(py, pyarrow, blocks)?;
+                let transactions = convert_batch_to_pyarrow_table(py, pyarrow, transactions)?;
+                let receipts = convert_batch_to_pyarrow_table(py, pyarrow, receipts)?;
+                let inputs = convert_batch_to_pyarrow_table(py, pyarrow, inputs)?;
+                let outputs = convert_batch_to_pyarrow_table(py, pyarrow, outputs)?;
+
+                Ok::<(PyObject, PyObject, PyObject, PyObject, PyObject), PyErr>((
+                    blocks,
+                    transactions,
+                    receipts,
+                    inputs,
+                    outputs,
+                ))
+            })?;
+
+            let query_response = compose_pyarrow_response(
+                res.archive_height,
+                res.next_block,
+                res.total_execution_time,
+                blocks,
+                transactions,
+                receipts,
+                inputs,
+                outputs,
+            )
+            .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
+
+            Ok(query_response)
         })
     }
-    */
 }
 
+// helper function to decode hex string as address
+fn hex_str_address_to_byte_array(hex_str: &str) -> Result<[u8; 32], String> {
+    if hex_str.len() != 64 {
+        return Err("address must be 64 hex characters".to_owned());
+    }
 
-fn convert_response_to_query_response(res: skar_client::QueryResponse) -> Result<QueryResponse> {
-    
-    let converted_response = skar_client::transactions_from_arrow_data(res).context("convert arrow data to internal structured type")?;
-    // turn converted response (skar-client type) into this crates type
-    let query_response = todo!();
-    // let blocks = res
-    //     .data
-    //     .blocks
-    //     .iter()
-    //     .map(Block::from_arrow)
-    //     .collect::<Result<Vec<_>>>()
-    //     .context("map blocks from arrow")?
-    //     .concat();
+    let mut dst = [0u8; 32];
+    match faster_hex::hex_decode(hex_str.as_bytes(), &mut dst) {
+        Ok(()) => Ok(dst),
+        Err(e) => Err(format!("Failed to decode hex string: {}", e)),
+    }
+}
 
-    // let transactions = res
-    //     .data
-    //     .transactions
-    //     .iter()
-    //     .map(Transaction::from_arrow)
-    //     .collect::<Result<Vec<_>>>()
-    //     .context("map transactions from arrow")?
-    //     .concat();
-
-    // let logs = res
-    //     .data
-    //     .logs
-    //     .iter()
-    //     .map(Log::from_arrow)
-    //     .collect::<Result<Vec<_>>>()
-    //     .context("map logs from arrow")?
-    //     .concat();
-
-    Ok(query_response
-        /*QueryResponse {
-        archive_height: res
-            .archive_height
+/// Construct response and centralize error mapping for calling function.
+fn compose_pyarrow_response(
+    archive_height: Option<u64>,
+    next_block: u64,
+    total_execution_time: u64,
+    blocks: PyObject,
+    transactions: PyObject,
+    receipts: PyObject,
+    inputs: PyObject,
+    outputs: PyObject,
+) -> Result<QueryResponseArrow> {
+    Ok(QueryResponseArrow {
+        archive_height: archive_height
             .map(|h| h.try_into())
             .transpose()
             .context("convert height")?,
-        next_block: res.next_block.try_into().context("convert next_block")?,
-        total_execution_time: res
-            .total_execution_time
+        next_block: next_block.try_into().context("convert next_block")?,
+        total_execution_time: total_execution_time
             .try_into()
             .context("convert total_execution_time")?,
-        data: QueryResponseData {
+        data: QueryArrowResponse {
             blocks,
             transactions,
-            logs,
+            receipts,
+            inputs,
+            outputs,
         },
-    }*/)
+    })
 }
 
-
-#[pyclass]
-#[pyo3(get_all)]
-#[derive(Clone, Debug)]
-pub struct QueryResponse {
-    /// Current height of the source hypersync instance
-    pub archive_height: Option<i64>,
-    /// Next block to query for, the responses are paginated so,
-    ///  the caller should continue the query from this block if they
-    ///  didn't get responses up to the to_block they specified in the Query.
-    pub next_block: i64,
-    /// Total time it took the hypersync instance to execute the query.
-    pub total_execution_time: i64,
-    /// Response data joined on transaction
-    pub data:Vec<TransactionContext>,
-}
-
-#[pymethods]
-impl QueryResponse {
-    fn __bool__(&self) -> bool {
-        self.archive_height.is_some()
-            || self.next_block != i64::default()
-            || self.total_execution_time != i64::default()
-            || self.data.__bool__()
+/// Uses RecordBatchReader to convert vector of ArrayBatch to reader by c-interface
+/// and then crates table from this reader with method from_batches
+fn convert_batch_to_pyarrow_table<'py>(
+    py: Python<'py>,
+    pyarrow: &'py PyModule,
+    batches: Vec<ArrowBatch>,
+) -> PyResult<PyObject> {
+    if batches.is_empty() {
+        return Ok(py.None());
     }
 
-    fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("{:?}", self))
+    let schema = batches.first().unwrap().schema.fields.clone();
+    let field = Field::new("a", DataType::Struct(schema), true);
+
+    let mut data = vec![];
+    for batch in batches {
+        data.push(
+            StructArray::new(field.data_type.clone(), batch.chunk.arrays().to_vec(), None).boxed(),
+        );
     }
 
-    fn __str__(&self) -> PyResult<String> {
-        Ok(format!("{:?}", self))
-    }
+    let iter = Box::new(data.into_iter().map(Ok)) as _;
+    let stream = Box::new(ffi::export_iterator(iter, field));
+    let py_stream = pyarrow.getattr("RecordBatchReader")?.call_method1(
+        "_import_from_c",
+        ((&*stream as *const ffi::ArrowArrayStream) as Py_uintptr_t,),
+    )?;
+    let table = pyarrow
+        .getattr("Table")?
+        .call_method1("from_batches", (py_stream,))?;
+
+    Ok(table.to_object(py))
 }
-
-#[pyclass]
-#[pyo3(get_all)]
-#[derive(Clone, Debug)]
-pub struct TransactionContext {
-    pub block: BlockHeader,
-    pub transaction: Transaction,
-    pub receipts: Vec<Receipt>,
-    pub inputs: Vec<Input>,
-    pub outputs: Vec<Output>,
-}
-
-
-// #[pymethods]
-// impl QueryResponseData {
-//     fn __bool__(&self) -> bool {
-//         !self.block.is_empty() || !self.transactions.is_empty() || !self.receipts.is_empty() || !self.inputs.is_empty()
-//     }
-
-//     fn __repr__(&self) -> PyResult<String> {
-//         Ok(format!("{:?}", self))
-//     }
-
-//     fn __str__(&self) -> PyResult<String> {
-//         Ok(format!("{:?}", self))
-//     }
-// }
