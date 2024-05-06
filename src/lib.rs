@@ -81,6 +81,11 @@ impl HypersyncClient {
 
     /// Create a parquet file by executing a query.
     ///
+    /// If the query can't be finished in a single request, this function will
+    /// keep on making requests using the pagination mechanism (next_block) until
+    /// it reaches the end. It will stream data into the parquet file as it comes from
+    /// the server.
+    ///
     /// Path should point to a folder that will contain the parquet files in the end.
     pub fn create_parquet_folder<'py>(
         &'py self,
@@ -104,12 +109,14 @@ impl HypersyncClient {
         })
     }
 
-    // TODO: comments
-
     /// Send a query request to the source hypersync instance.
     ///
-    /// Returns a query response which contains structure query response data joined on transaction.
-    /// Format can be ArrowIpc.
+    /// Returns a query response which contains typed data.
+    ///
+    /// NOTE: this query returns loads all transactions that your match your receipt, input, or output selections
+    /// and applies the field selection to all these loaded transactions.  So your query will return the data you
+    /// want plus additional data from the loaded transactions.  This functionality is in case you want to associate
+    /// receipts, inputs, or outputs with eachother.
     pub fn get_data<'py>(&'py self, query: query::Query, py: Python<'py>) -> PyResult<&'py PyAny> {
         let inner = Arc::clone(&self.inner);
 
@@ -127,6 +134,10 @@ impl HypersyncClient {
         })
     }
 
+    /// Send a query request to the source hypersync instance.
+    ///
+    /// Returns a query response that which contains structured data that doesn't include any inputs, outputs,
+    /// and receipts that don't exactly match the query's input, outout, or receipt selection.
     pub fn get_selected_data<'py>(
         &'py self,
         query: query::Query,
@@ -148,6 +159,16 @@ impl HypersyncClient {
         })
     }
 
+    /// Send a query request to the source hypersync instance.
+    ///
+    /// Returns all log and logdata receipts of logs emitted by any of the specified contracts
+    /// within the block range.
+    /// If no 'to_block' is specified, query will run to the head of the chain.
+    /// Returned data contains all the data needed to decode Fuel Log or LogData
+    /// receipts as well as some extra data for context.  This query doesn't return any logs that
+    /// were a part of a failed transaction.
+    ///
+    /// NOTE: this function is experimental and might be removed in future versions.
     pub fn preset_query_get_logs<'py>(
         &'py self,
         emitting_contracts: Vec<String>,
@@ -180,6 +201,14 @@ impl HypersyncClient {
         })
     }
 
+    /// Send a query request to the source hypersync instance.
+    ///
+    /// Returns a query response which contains pyarrow data.
+    ///
+    /// NOTE: this query returns loads all transactions that your match your receipt, input, or output selections
+    /// and applies the field selection to all these loaded transactions.  So your query will return the data you
+    /// want plus additional data from the loaded transactions.  This functionality is in case you want to associate
+    /// receipts, inputs, or outputs with eachother.
     pub fn get_arrow_data<'py>(
         &'py self,
         query: query::Query,
@@ -237,6 +266,18 @@ impl HypersyncClient {
         })
     }
 
+    /// Send a query request to the source hypersync instance.
+    /// On an error from the source hypersync instance, sleeps for
+    /// 1 second (increasing by 1 each failure up to max of 5 seconds)
+    /// and retries query until success.
+    ///
+    /// Returns a query response which contains pyarrow data.
+    ///
+    /// NOTE: this query returns loads all transactions that your match your receipt, input, or output selections
+    /// and applies the field selection to all these loaded transactions.  So your query will return the data you
+    /// want plus additional data from the loaded transactions.  This functionality is in case you want to associate
+    /// receipts, inputs, or outputs with eachother.
+    /// Format can be ArrowIpc.
     pub fn get_arrow_data_with_retry<'py>(
         &'py self,
         query: query::Query,

@@ -176,6 +176,7 @@ class Query:
     max_num_transactions: Optional[int] = None
 
 class HypersyncClient:
+    # Create a new client with given config
     def __init__(self, url="https://fuel-15.hypersync.xyz", bearer_token=None, http_req_timeout_millis=None):
         self.inner = _HypersyncClient({
             "url": url,
@@ -183,27 +184,83 @@ class HypersyncClient:
             "http_req_timeout_millis": http_req_timeout_millis
         })
 
+# Create a parquet file by executing a query.
+    #
+    # If the query can't be finished in a single request, this function will
+    # keep on making requests using the pagination mechanism (next_block) until
+    # it reaches the end. It will stream data into the parquet file as it comes from
+    # the server.
+    #
+    # Path should point to a folder that will contain the parquet files in the end.
     async def create_parquet_folder(self, query: Query, path: str) -> None:
         return await self.inner.create_parquet_folder(asdict(query), path)
 
+    # Get the height of the source hypersync instance
     async def get_height(self) -> int:    
         return await self.inner.get_height()
         
+    # Get the height of the source hypersync instance
+    # Internally calls get_height.
+    # On an error from the source hypersync instance, sleeps for
+    # 1 second (increasing by 1 each failure up to max of 5 seconds)
+    # and retries query until success.
     async def get_height_with_retry(self) -> int:
         return await self.inner.get_height_with_retry()
     
+    # Send a query request to the source hypersync instance.
+    #
+    # Returns a query response which contains pyarrow data.
+    #
+    # NOTE: this query returns loads all transactions that your match your receipt, input, or output selections
+    # and applies the field selection to all these loaded transactions.  So your query will return the data you
+    # want plus additional data from the loaded transactions.  This functionality is in case you want to associate
+    # receipts, inputs, or outputs with eachother.
     async def get_arrow_data(self, query: Query) -> any:
         return await self.inner.get_arrow_data(asdict(query))
     
+    # Send a query request to the source hypersync instance.
+    # On an error from the source hypersync instance, sleeps for
+    # 1 second (increasing by 1 each failure up to max of 5 seconds)
+    # and retries query until success.
+    #
+    # Returns a query response which contains pyarrow data.
+    #
+    # NOTE: this query returns loads all transactions that your match your receipt, input, or output selections
+    # and applies the field selection to all these loaded transactions.  So your query will return the data you
+    # want plus additional data from the loaded transactions.  This functionality is in case you want to associate
+    # receipts, inputs, or outputs with eachother.
+    # Format can be ArrowIpc.
     async def get_arrow_data_with_retry(self, query: Query) -> any:
         return await self.inner.get_arrow_data_with_retry(asdict(query))
 
+    # Send a query request to the source hypersync instance.
+    #
+    # Returns a query response which contains typed data.
+    #
+    # NOTE: this query returns loads all transactions that your match your receipt, input, or output selections
+    # and applies the field selection to all these loaded transactions.  So your query will return the data you
+    # want plus additional data from the loaded transactions.  This functionality is in case you want to associate
+    # receipts, inputs, or outputs with eachother.
     async def get_data(self, query: Query) -> any:
         return await self.inner.get_data(asdict(query))
-    
+
+    # Send a query request to the source hypersync instance.
+    #
+    # Returns a query response that which contains structured data that doesn't include any inputs, outputs,
+    # and receipts that don't exactly match the query's input, outout, or receipt selection.
     async def get_selected_data(self, query: Query) -> any:
         return await self.inner.get_selected_data(asdict(query))
     
+    # Send a query request to the source hypersync instance.
+    #
+    # Returns all log and logdata receipts of logs emitted by any of the specified contracts
+    # within the block range.
+    # If no 'to_block' is specified, query will run to the head of the chain.
+    # Returned data contains all the data needed to decode Fuel Log or LogData
+    # receipts as well as some extra data for context.  This query doesn't return any logs that
+    # were a part of a failed transaction.
+    #
+    # NOTE: this function is experimental and might be removed in future versions.
     async def preset_query_get_logs(self, emitting_contracts: list[str], from_block: int, to_block: Optional[int]) -> any:
         return await self.inner.preset_query_get_logs(emitting_contracts, from_block, to_block)
 
