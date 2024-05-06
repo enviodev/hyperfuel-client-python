@@ -4,7 +4,7 @@ from hypersync_fuel import BlockField, TransactionField, ReceiptField, InputFiel
 
 
 QUERY = hypersync_fuel.Query(
-    from_block= 8076516,
+    from_block=8076516,
     to_block=8076517,
     receipts=[
         hypersync_fuel.ReceiptSelection(
@@ -47,36 +47,46 @@ async def test_create_parquet_folder():
     client = hypersync_fuel.HypersyncClient()
     await client.create_parquet_folder(QUERY, "data")
 
+async def test_get_height():
+    client = hypersync_fuel.HypersyncClient()
+    height = await client.get_height()
+    print("current height: " + str(height))
 
-# async def test_send_req():
-#     client = hypersync.HypersyncClient()
-#     total_time = 0
-#     for _ in range(NUM_BENCHMARK_RUNS):
-#         start_time = time.time()
-#         res = await client.send_req(QUERY)
-#         execution_time = (time.time() - start_time) * 1000
-#         total_time += execution_time
-#     avg_time = total_time / NUM_BENCHMARK_RUNS
-#     print(f"send_req time: {format(execution_time, '.9f')}ms")
+async def test_get_arrow_data():
+    import pyarrow
+    client = hypersync_fuel.HypersyncClient()
+    res = await client.get_arrow_data(QUERY)
+    assert(type(res.data.blocks) == pyarrow.lib.Table)
+    assert(res.data.blocks._is_initialized())
+    assert(type(res.data.transactions) == pyarrow.lib.Table)
+    assert(res.data.transactions._is_initialized())
+    assert(type(res.data.receipts) == pyarrow.lib.Table)
+    assert(res.data.receipts._is_initialized())
+    assert(type(res.data.inputs) == pyarrow.lib.Table)
+    assert(res.data.inputs._is_initialized())
+    assert(type(res.data.outputs) == pyarrow.lib.Table)
+    assert(res.data.outputs._is_initialized())
 
+async def test_get_data():
+    client = hypersync_fuel.HypersyncClient()
+    res = await client.get_data(QUERY)
 
+async def test_get_selected_data():
+    client = hypersync_fuel.HypersyncClient()
+    res = await client.get_selected_data(QUERY)
 
+async def test_preset_query_get_logs():
+    client = hypersync_fuel.HypersyncClient()
+    contracts = ["0xff63ad3cdb5fde197dfa2d248330d458bffe631bda65938aa7ab7e37efa561d0"]
+    res = await client.preset_query_get_logs(emitting_contracts=contracts,from_block=8076516,to_block=8076517,)
 
 async def main():
+    print("smoke test hypersync-fuel-client-python")
     await test_create_parquet_folder()
-    # print("hypersync-client-python")
-    # print(f"number of runs for each test: {NUM_BENCHMARK_RUNS}")
-    # await test_send_req()
-    # await test_send_req_arrow()
-    # await test_send_events_req()
-    # await test_get_height()
-    # await test_decode_logs()
-    # await test_decode_events()
-    # await test_create_parquet_folder()
-    # await test_preset_query_blocks_and_transactions()
-    # await test_preset_query_blocks_and_transaction_hashes()
-    # await test_preset_query_logs()
-    # await test_preset_query_logs_of_event()
-
+    await test_get_height()
+    await test_get_arrow_data()
+    await test_get_data()
+    await test_get_selected_data()
+    await test_preset_query_get_logs()
 
 asyncio.run(main())

@@ -183,9 +183,6 @@ class HypersyncClient:
             "http_req_timeout_millis": http_req_timeout_millis
         })
 
-    async def get_height(self) -> int:
-        return await self.inner.get_height()
-
     async def create_parquet_folder(self, query: Query, path: str) -> None:
         return await self.inner.create_parquet_folder(asdict(query), path)
 
