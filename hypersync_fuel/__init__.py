@@ -1,5 +1,5 @@
 from .hypersync_fuel import HypersyncClient as _HypersyncClient
-from typing import Optional, Dict
+from typing import Optional
 from dataclasses import dataclass, asdict
 from strenum import StrEnum
 
@@ -160,18 +160,18 @@ class FieldSelection:
     block: Optional[list[BlockField]] = None
     transaction: Optional[list[TransactionField]] = None
     receipt: Optional[list[ReceiptField]] = None
-    Input: Optional[list[InputField]] = None
-    Output: Optional[list[OutputField]] = None
+    input: Optional[list[InputField]] = None
+    output: Optional[list[OutputField]] = None
 
 @dataclass
 class Query:
     from_block: int
+    field_selection: FieldSelection
     to_block: Optional[int] = None
     include_all_blocks: Optional[bool] = None
     receipts: Optional[list[ReceiptSelection]] = None
     inputs: Optional[list[InputSelection]] = None
     outputs: Optional[list[OutputSelection]] = None
-    field_selection: FieldSelection
     max_num_blocks: Optional[int] = None
     max_num_transactions: Optional[int] = None
 

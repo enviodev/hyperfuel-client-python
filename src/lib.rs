@@ -21,7 +21,7 @@ use pyo3::{
 pub use config::Config;
 
 #[pymodule]
-fn hypersync(_py: Python, m: &PyModule) -> PyResult<()> {
+fn hypersync_fuel(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<HypersyncClient>()
 }
 #[pyclass]
