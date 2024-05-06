@@ -36,13 +36,13 @@ impl QueryResponseArrowData {
 #[derive(Clone, Debug)]
 pub struct QueryResponseArrow {
     /// Current height of the source hypersync instance
-    pub archive_height: Option<i64>,
+    pub archive_height: Option<u64>,
     /// Next block to query for, the responses are paginated so,
     ///  the caller should continue the query from this block if they
     ///  didn't get responses up to the to_block they specified in the Query.
-    pub next_block: i64,
+    pub next_block: u64,
     /// Total time it took the hypersync instance to execute the query.
-    pub total_execution_time: i64,
+    pub total_execution_time: u64,
     /// Response data in pyarrow format
     pub data: QueryResponseArrowData,
 }
@@ -51,8 +51,8 @@ pub struct QueryResponseArrow {
 impl QueryResponseArrow {
     fn __bool__(&self) -> bool {
         self.archive_height.is_some()
-            || self.next_block != i64::default()
-            || self.total_execution_time != i64::default()
+            || self.next_block != u64::default()
+            || self.total_execution_time != u64::default()
             || self.data.__bool__()
     }
 
@@ -81,6 +81,24 @@ pub struct QueryResponseTyped {
     pub data: QueryResponseDataTyped,
 }
 
+#[pymethods]
+impl QueryResponseTyped {
+    fn __bool__(&self) -> bool {
+        self.archive_height.is_some()
+            || self.next_block != u64::default()
+            || self.total_execution_time != u64::default()
+            || self.data.__bool__()
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
+}
+
 #[pyclass]
 #[pyo3(get_all)]
 #[derive(Debug, Clone)]
@@ -90,6 +108,25 @@ pub struct QueryResponseDataTyped {
     pub receipts: Vec<Receipt>,
     pub inputs: Vec<Input>,
     pub outputs: Vec<Output>,
+}
+
+#[pymethods]
+impl QueryResponseDataTyped {
+    fn __bool__(&self) -> bool {
+        !self.blocks.is_empty()
+            || !self.transactions.is_empty()
+            || !self.receipts.is_empty()
+            || !self.inputs.is_empty()
+            || !self.outputs.is_empty()
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
 }
 
 impl From<skar_client_fuel::QueryResponseTyped> for QueryResponseTyped {
@@ -130,6 +167,24 @@ pub struct LogResponse {
     pub data: Vec<LogContext>,
 }
 
+#[pymethods]
+impl LogResponse {
+    fn __bool__(&self) -> bool {
+        self.archive_height.is_some()
+            || self.next_block != u64::default()
+            || self.total_execution_time != u64::default()
+            || !self.data.is_empty()
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
+}
+
 /// Contains all the fields needed for decoding plus some additional fields
 /// for context.
 #[pyclass]
@@ -152,6 +207,23 @@ pub struct LogContext {
     pub len: Option<u64>,
     pub digest: Option<String>,
     pub data: Option<String>,
+}
+
+#[pymethods]
+impl LogContext {
+    fn __bool__(&self) -> bool {
+        self.block_height == u64::default()
+            || self.receipt_index == u64::default()
+            || self.receipt_type == u8::default()
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
 }
 
 impl From<skar_client_fuel::LogResponse> for LogResponse {

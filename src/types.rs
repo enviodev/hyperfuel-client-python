@@ -1,4 +1,4 @@
-use pyo3::pyclass;
+use pyo3::{pyclass, pymethods, PyResult};
 use skar_format_fuel::Hex;
 
 /// The block header contains metadata about a certain block.
@@ -26,6 +26,17 @@ pub struct Block {
     pub time: u64,
     /// The String of the serialized application header for this block.
     pub application_hash: String,
+}
+
+#[pymethods]
+impl Block {
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
 }
 
 /// An object containing information about a transaction.
@@ -100,6 +111,17 @@ pub struct Transaction {
     pub salt: Option<String>,
 }
 
+#[pymethods]
+impl Transaction {
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
+}
+
 /// An object representing all possible types of receipts.
 #[pyclass]
 #[pyo3(get_all)]
@@ -169,6 +191,17 @@ pub struct Receipt {
     pub sub_id: Option<String>,
 }
 
+#[pymethods]
+impl Receipt {
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
+}
+
 /// An object representing all possible types of inputs.  InputCoin, InputContract, InputMessage
 #[pyclass]
 #[pyo3(get_all)]
@@ -216,6 +249,17 @@ pub struct Input {
     pub data: Option<String>,
 }
 
+#[pymethods]
+impl Input {
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
+}
+
 /// An object representing all possible types of Outputs. CoinOutput, ContractOutput, ChangeOutput, VariableOutput, ContractCreated
 #[pyclass]
 #[pyo3(get_all)]
@@ -242,6 +286,17 @@ pub struct Output {
     pub state_root: Option<String>,
     /// for ContractCreated type: The contract that was created.
     pub contract: Option<String>,
+}
+
+#[pymethods]
+impl Output {
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self))
+    }
 }
 
 impl From<skar_format_fuel::BlockHeader> for Block {

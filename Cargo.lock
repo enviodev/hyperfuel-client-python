@@ -1155,7 +1155,7 @@ dependencies = [
 
 [[package]]
 name = "hypersync-fuel"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "arrow2",
@@ -2208,9 +2208,9 @@ checksum = "f27f6278552951f1f2b8cf9da965d10969b2efdea95a6ec47987ab46edfe263a"
 
 [[package]]
 name = "skar-client-fuel"
-version = "0.0.6"
+version = "0.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9da7d997222cb0bddb07b81cad971ac1ccf6e265a14e98eabba6df6a347b979d"
+checksum = "f575c142d1433dc4b45f390ce6592adca4bac974ebc64c3fb641699b8304d2b0"
 dependencies = [
  "alloy-dyn-abi",
  "alloy-json-abi",
