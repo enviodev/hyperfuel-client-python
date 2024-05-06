@@ -4,8 +4,8 @@ use arrow2::ffi;
 use arrow2::{array::StructArray, datatypes::DataType};
 use pyo3::ffi::Py_uintptr_t;
 use pyo3_asyncio::tokio::future_into_py;
-use response::{QueryArrowResponse, QueryResponseArrow};
-use skar_client_fuel::{ArrowBatch, QueryResponseTyped};
+use response::{LogResponse, QueryArrowResponse, QueryResponseArrow, QueryResponseTyped};
+use skar_client_fuel::ArrowBatch;
 use std::sync::Arc;
 
 mod config;
@@ -126,7 +126,7 @@ impl HypersyncClient {
             // let res = convert_response_to_query_response(res)
             //     .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
 
-            Ok(res)
+            Ok(res.into())
         })
     }
 
@@ -150,7 +150,7 @@ impl HypersyncClient {
             // let res = convert_response_to_query_response(res)
             //     .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
 
-            Ok(res)
+            Ok(res.into())
         })
     }
 
@@ -164,7 +164,7 @@ impl HypersyncClient {
         let inner = Arc::clone(&self.inner);
 
         // cut the "0x" off the address
-        let emitting_contracts_args = vec![];
+        let mut emitting_contracts_args = vec![];
         for contract_address in emitting_contracts {
             let address: &str = if &contract_address[..2] == "0x" {
                 &contract_address[2..]
@@ -182,7 +182,7 @@ impl HypersyncClient {
                 .await
                 .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
 
-            Ok(res)
+            Ok(res.into())
         })
     }
 

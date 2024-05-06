@@ -91,6 +91,12 @@ pub struct QueryResponseDataTyped {
     pub outputs: Vec<Output>,
 }
 
+impl From<skar_client_fuel::QueryResponseTyped> for QueryResponseTyped {
+    fn from(resp: skar_client_fuel::QueryResponseTyped) -> Self {
+        todo!()
+    }
+}
+
 #[pyclass]
 #[pyo3(get_all)]
 #[derive(Debug, Clone)]
@@ -129,4 +135,10 @@ pub struct LogContext {
     pub len: Option<u64>,
     pub digest: Option<String>,
     pub data: Option<String>,
+}
+
+impl From<skar_client_fuel::LogResponse> for LogResponse {
+    fn from(resp: skar_client_fuel::LogResponse) -> Self {
+        todo!()
+    }
 }
