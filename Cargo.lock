@@ -2208,9 +2208,9 @@ checksum = "f27f6278552951f1f2b8cf9da965d10969b2efdea95a6ec47987ab46edfe263a"
 
 [[package]]
 name = "skar-client-fuel"
-version = "0.0.4"
+version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ae5e62b3ef09f36daeaf97e5a0b89fd49dca2b39f83f2c6ea5343c3b498d896"
+checksum = "9da7d997222cb0bddb07b81cad971ac1ccf6e265a14e98eabba6df6a347b979d"
 dependencies = [
  "alloy-dyn-abi",
  "alloy-json-abi",
@@ -2236,9 +2236,9 @@ dependencies = [
 
 [[package]]
 name = "skar-format-fuel"
-version = "0.0.2"
+version = "0.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3561ca857aba248b98ed02cd6b3b868fc37e3a5e3d1db061ac04859a4504ddb3"
+checksum = "a778e4a92ad675cc4dab3fdd6e3bc5773bd869b016981847810cd80420b52e68"
 dependencies = [
  "arrayvec",
  "derive_more",
@@ -2249,9 +2249,9 @@ dependencies = [
 
 [[package]]
 name = "skar-net-types-fuel"
-version = "0.0.2"
+version = "0.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb100e86e3195873a99d8dcb58469e3a99c8da04df0460020b64a838954cdaee"
+checksum = "6db34cb9577e7f688d53f847591a9c09e41d9d938362a8ff0c4a5f8ef683df76"
 dependencies = [
  "arrayvec",
  "capnp",

@@ -1,4 +1,5 @@
 use pyo3::pyclass;
+use skar_format_fuel::Hex;
 
 /// The block header contains metadata about a certain block.
 #[pyclass]
@@ -10,9 +11,9 @@ pub struct Block {
     /// The block height for the data availability layer up to which (inclusive) input messages are processed.
     pub da_height: u64,
     /// The number of transactions in the block.
-    pub transactions_count: u64,
+    pub transactions_count: String,
     /// The number of receipt messages in the block.
-    pub message_receipt_count: u64,
+    pub message_receipt_count: String,
     /// The merkle root of the transactions in the block.
     pub transactions_root: String,
     /// The merkle root of the receipt messages in the block.
@@ -24,7 +25,7 @@ pub struct Block {
     /// The timestamp for the block.
     pub time: u64,
     /// The String of the serialized application header for this block.
-    pub application_String: String,
+    pub application_hash: String,
 }
 
 /// An object containing information about a transaction.
@@ -161,7 +162,7 @@ pub struct Receipt {
     /// The address of the message recipient.
     pub recipient: Option<String>,
     /// The nonce value for a message.
-    pub nonce: Option<u64>,
+    pub nonce: Option<String>,
     /// Current context if in an internal context. null otherwise
     pub contract_id: Option<String>,
     /// The sub id.
@@ -242,73 +243,148 @@ pub struct Output {
     /// for ContractCreated type: The contract that was created.
     pub contract: Option<String>,
 }
-// i64, bool, String, u32
-/*
-/// Evm log object
-///
-/// See ethereum rpc spec for the meaning of fields
-#[pyclass]
-#[pyo3(get_all)]
-#[derive(Default, Clone, Debug, Eq, PartialEq)]
-pub struct Log {
 
-}
-
-#[pymethods]
-impl Log {
-    fn __bool__(&self) -> bool {
-        *self != Log::default()
-    }
-
-    fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("{:?}", self))
-    }
-
-    fn __str__(&self) -> PyResult<String> {
-        Ok(format!("{:?}", self))
+impl From<skar_format_fuel::BlockHeader> for Block {
+    fn from(b: skar_format_fuel::BlockHeader) -> Self {
+        Self {
+            id: b.id.encode_hex(),
+            da_height: b.da_height.into(),
+            transactions_count: b.transactions_count.encode_hex(),
+            message_receipt_count: b.message_receipt_count.encode_hex(),
+            transactions_root: b.transactions_root.encode_hex(),
+            message_receipt_root: b.message_receipt_root.encode_hex(),
+            height: b.height.into(),
+            prev_root: b.prev_root.encode_hex(),
+            time: b.time.into(),
+            application_hash: b.application_hash.encode_hex(),
+        }
     }
 }
 
-/// Evm transaction object
-///
-/// See ethereum rpc spec for the meaning of fields
-#[pyclass]
-#[pyo3(get_all)]
-#[derive(Default, Clone, Debug, Eq, PartialEq)]
-pub struct Transaction {
-
+impl From<skar_format_fuel::Transaction> for Transaction {
+    fn from(t: skar_format_fuel::Transaction) -> Self {
+        Self {
+            block_height: t.block_height.into(),
+            id: t.id.encode_hex(),
+            input_asset_ids: t
+                .input_asset_ids
+                .map(|d| d.into_iter().map(|i| i.encode_hex()).collect()),
+            input_contracts: t
+                .input_contracts
+                .map(|d| d.into_iter().map(|i| i.encode_hex()).collect()),
+            input_contract_utxo_id: t.input_contract_utxo_id.map(|d| d.encode_hex()),
+            input_contract_balance_root: t.input_contract_balance_root.map(|d| d.encode_hex()),
+            input_contract_state_root: t.input_contract_state_root.map(|d| d.encode_hex()),
+            input_contract_tx_pointer_block_height: t
+                .input_contract_tx_pointer_block_height
+                .map(|d| d.into()),
+            input_contract_tx_pointer_tx_index: t
+                .input_contract_tx_pointer_tx_index
+                .map(|d| d.into()),
+            input_contract: t.input_contract.map(|d| d.encode_hex()),
+            gas_price: t.gas_price.map(|d| d.into()),
+            gas_limit: t.gas_limit.map(|d| d.into()),
+            maturity: t.maturity.map(|d| d.into()),
+            mint_amount: t.mint_amount.map(|d| d.into()),
+            mint_asset_id: t.mint_asset_id.map(|d| d.encode_hex()),
+            tx_pointer_block_height: t.tx_pointer_block_height.map(|d| d.into()),
+            tx_pointer_tx_index: t.tx_pointer_tx_index.map(|d| d.into()),
+            tx_type: t.tx_type.to_u8(),
+            output_contract_input_index: t.output_contract_input_index.map(|d| d.into()),
+            output_contract_balance_root: t.output_contract_balance_root.map(|d| d.encode_hex()),
+            output_contract_state_root: t.output_contract_state_root.map(|d| d.encode_hex()),
+            witnesses: t.witnesses.map(|d| d.encode_hex()),
+            receipts_root: t.receipts_root.map(|d| d.encode_hex()),
+            status: t.status.as_u8(),
+            time: t.time.into(),
+            reason: t.reason.map(|d| d.into()),
+            script: t.script.map(|d| d.encode_hex()),
+            script_data: t.script_data.map(|d| d.encode_hex()),
+            bytecode_witness_index: t.bytecode_witness_index.map(|d| d.into()),
+            bytecode_length: t.bytecode_length.map(|d| d.into()),
+            salt: t.salt.map(|d| d.encode_hex()),
+        }
+    }
 }
 
-#[pymethods]
-impl Transaction {
-    fn __bool__(&self) -> bool {
-        *self != Transaction::default()
-    }
-
-    fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("{:?}", self))
-    }
-
-    fn __str__(&self) -> PyResult<String> {
-        Ok(format!("{:?}", self))
+impl From<skar_format_fuel::Receipt> for Receipt {
+    fn from(r: skar_format_fuel::Receipt) -> Self {
+        Self {
+            receipt_index: r.receipt_index.into(),
+            root_contract_id: r.root_contract_id.map(|d| d.encode_hex()),
+            tx_id: r.tx_id.encode_hex(),
+            block_height: r.block_height.into(),
+            pc: r.pc.map(|d| d.into()),
+            is: r.is.map(|d| d.into()),
+            to: r.to.map(|d| d.encode_hex()),
+            to_address: r.to_address.map(|d| d.encode_hex()),
+            amount: r.amount.map(|d| d.into()),
+            asset_id: r.asset_id.map(|d| d.encode_hex()),
+            gas: r.gas.map(|d| d.into()),
+            param1: r.param1.map(|d| d.into()),
+            param2: r.param2.map(|d| d.into()),
+            val: r.val.map(|d| d.into()),
+            ptr: r.ptr.map(|d| d.into()),
+            digest: r.digest.map(|d| d.encode_hex()),
+            reason: r.reason.map(|d| d.into()),
+            ra: r.ra.map(|d| d.into()),
+            rb: r.rb.map(|d| d.into()),
+            rc: r.rc.map(|d| d.into()),
+            rd: r.rd.map(|d| d.into()),
+            len: r.len.map(|d| d.into()),
+            receipt_type: r.receipt_type.to_u8(),
+            result: r.result.map(|d| d.into()),
+            gas_used: r.gas_used.map(|d| d.into()),
+            data: r.data.map(|d| d.encode_hex()),
+            sender: r.sender.map(|d| d.encode_hex()),
+            recipient: r.recipient.map(|d| d.encode_hex()),
+            nonce: r.nonce.map(|d| d.encode_hex()),
+            contract_id: r.contract_id.map(|d| d.encode_hex()),
+            sub_id: r.sub_id.map(|d| d.encode_hex()),
+        }
     }
 }
 
-/// Evm block header object
-///
-
-#[pymethods]
-impl Block {
-    fn __bool__(&self) -> bool {
-        *self != Block::default()
-    }
-
-    fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("{:?}", self))
-    }
-
-    fn __str__(&self) -> PyResult<String> {
-        Ok(format!("{:?}", self))
+impl From<skar_format_fuel::Input> for Input {
+    fn from(i: skar_format_fuel::Input) -> Self {
+        Self {
+            tx_id: i.tx_id.encode_hex(),
+            block_height: i.block_height.into(),
+            input_type: i.input_type.as_u8(),
+            utxo_id: i.utxo_id.map(|d| d.encode_hex()),
+            owner: i.owner.map(|d| d.encode_hex()),
+            amount: i.amount.map(|d| d.into()),
+            asset_id: i.asset_id.map(|d| d.encode_hex()),
+            tx_pointer_block_height: i.tx_pointer_block_height.map(|d| d.into()),
+            tx_pointer_tx_index: i.tx_pointer_tx_index.map(|d| d.into()),
+            witness_index: i.witness_index.map(|d| d.into()),
+            predicate_gas_used: i.predicate_gas_used.map(|d| d.into()),
+            predicate: i.predicate.map(|d| d.encode_hex()),
+            predicate_data: i.predicate_data.map(|d| d.encode_hex()),
+            balance_root: i.balance_root.map(|d| d.encode_hex()),
+            state_root: i.state_root.map(|d| d.encode_hex()),
+            contract: i.contract.map(|d| d.encode_hex()),
+            sender: i.sender.map(|d| d.encode_hex()),
+            recipient: i.recipient.map(|d| d.encode_hex()),
+            nonce: i.nonce.map(|d| d.encode_hex()),
+            data: i.data.map(|d| d.encode_hex()),
+        }
     }
 }
-*/
+
+impl From<skar_format_fuel::Output> for Output {
+    fn from(r: skar_format_fuel::Output) -> Self {
+        Self {
+            tx_id: r.tx_id.encode_hex(),
+            block_height: r.block_height.into(),
+            output_type: r.output_type.as_u8(),
+            to: r.to.map(|d| d.encode_hex()),
+            amount: r.amount.map(|d| d.into()),
+            asset_id: r.asset_id.map(|d| d.encode_hex()),
+            input_index: r.input_index.map(|d| d.into()),
+            balance_root: r.balance_root.map(|d| d.encode_hex()),
+            state_root: r.state_root.map(|d| d.encode_hex()),
+            contract: r.contract.map(|d| d.encode_hex()),
+        }
+    }
+}

@@ -18,9 +18,9 @@ dict_derive = "0.5.0"
 serde_json = "1"
 serde = { version = "1", features = ["derive"] }
 
-skar-client-fuel = "0.0.4"
-skar-net-types-fuel = "0.0.2"
-skar-format-fuel = "0.0.2"
+skar-client-fuel = "0.0.6"
+skar-net-types-fuel = "0.0.3"
+skar-format-fuel = "0.0.4"
 
 anyhow = "1"
 prefix-hex = "0.7.1"

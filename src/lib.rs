@@ -4,7 +4,7 @@ use arrow2::ffi;
 use arrow2::{array::StructArray, datatypes::DataType};
 use pyo3::ffi::Py_uintptr_t;
 use pyo3_asyncio::tokio::future_into_py;
-use response::{LogResponse, QueryArrowResponse, QueryResponseArrow, QueryResponseTyped};
+use response::{LogResponse, QueryResponseArrow, QueryResponseArrowData, QueryResponseTyped};
 use skar_client_fuel::ArrowBatch;
 use std::sync::Arc;
 
@@ -123,9 +123,6 @@ impl HypersyncClient {
                 .await
                 .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
 
-            // let res = convert_response_to_query_response(res)
-            //     .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
-
             Ok(res.into())
         })
     }
@@ -146,9 +143,6 @@ impl HypersyncClient {
                 .get_selected_data(&query)
                 .await
                 .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
-
-            // let res = convert_response_to_query_response(res)
-            //     .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
 
             Ok(res.into())
         })
@@ -334,7 +328,7 @@ fn compose_pyarrow_response(
         total_execution_time: total_execution_time
             .try_into()
             .context("convert total_execution_time")?,
-        data: QueryArrowResponse {
+        data: QueryResponseArrowData {
             blocks,
             transactions,
             receipts,
