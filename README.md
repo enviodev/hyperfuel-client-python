@@ -4,6 +4,10 @@ Python package for [Envio's](https://envio.dev/) Hypersync-Fuel client written i
 More information about Envio's Hypersync support of Fuel at [https://github.com/enviodev/hypersync-fuel-docs](https://github.com/enviodev/hypersync-fuel-docs)
 
 ## quickstart example
+```bash
+$ pip install hypersync-fuel
+```
+
 ```python
 # This example will simply fetch the logs from the given contracts over a block range
 # returns all log data necessary for fuel's decoder
@@ -23,7 +27,6 @@ async def main():
     print("logs: " + str(logs.data))
 
 asyncio.run(main())
-
 ```
 
 ### More examples in `examples/`
