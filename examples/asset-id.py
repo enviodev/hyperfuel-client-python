@@ -8,7 +8,6 @@ import asyncio
 
 async def main():
     client = hyperfuel.HyperfuelClient()
-    query = hyperfuel.HyperfuelClient()
 
     query = hyperfuel.Query(
         from_block=7980000,
