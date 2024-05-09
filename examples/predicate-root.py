@@ -2,22 +2,22 @@
 # where the `owner` field matches the predicate root 0x48a0f31c78e1c837ff6a885785ceb7c2090f86ed93db3ed2d8821d13739fe981
 # `owner` is ["The owning address or predicate root."](https://docs.fuel.network/docs/beta-4/graphql/reference/objects/#inputcoin) of an InputCoin Input type
 
-import hypersync_fuel
-from hypersync_fuel import InputField
+import hyperfuel
+from hyperfuel import InputField
 import asyncio
 
 async def main():
-    client = hypersync_fuel.HypersyncClient()
+    client = hyperfuel.HyperfuelClient()
 
-    query = hypersync_fuel.Query(
+    query = hyperfuel.Query(
         from_block=4105960,
         to_block=4106000,
         inputs=[
-            hypersync_fuel.InputSelection(
+            hyperfuel.InputSelection(
                 owner=["0x48a0f31c78e1c837ff6a885785ceb7c2090f86ed93db3ed2d8821d13739fe981"]
             )
         ],
-        field_selection=hypersync_fuel.FieldSelection(
+        field_selection=hyperfuel.FieldSelection(
             input=[
                 InputField.TX_ID,
                 InputField.BLOCK_HEIGHT,

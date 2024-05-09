@@ -1,18 +1,18 @@
-import hypersync_fuel
+import hyperfuel
 import asyncio
-from hypersync_fuel import BlockField, TransactionField, ReceiptField, InputField, OutputField
+from hyperfuel import BlockField, TransactionField, ReceiptField, InputField, OutputField
 
 
-QUERY = hypersync_fuel.Query(
+QUERY = hyperfuel.Query(
     from_block=8076516,
     to_block=8076517,
     receipts=[
-        hypersync_fuel.ReceiptSelection(
+        hyperfuel.ReceiptSelection(
             root_contract_id=["0xff63ad3cdb5fde197dfa2d248330d458bffe631bda65938aa7ab7e37efa561d0"],
             receipt_type=[5, 6]
         )
     ],
-    field_selection=hypersync_fuel.FieldSelection(
+    field_selection=hyperfuel.FieldSelection(
         block=[
             BlockField.HEIGHT,
             BlockField.TRANSACTIONS_ROOT
@@ -44,17 +44,17 @@ QUERY = hypersync_fuel.Query(
 )
 
 async def test_create_parquet_folder():
-    client = hypersync_fuel.HypersyncClient()
+    client = hyperfuel.HyperfuelClient()
     await client.create_parquet_folder(QUERY, "data")
 
 async def test_get_height():
-    client = hypersync_fuel.HypersyncClient()
+    client = hyperfuel.HyperfuelClient()
     height = await client.get_height()
     print("current height: " + str(height))
 
 async def test_get_arrow_data():
     import pyarrow
-    client = hypersync_fuel.HypersyncClient()
+    client = hyperfuel.HyperfuelClient()
     res = await client.get_arrow_data(QUERY)
     assert(type(res.data.blocks) == pyarrow.lib.Table)
     assert(res.data.blocks._is_initialized())
@@ -68,20 +68,20 @@ async def test_get_arrow_data():
     assert(res.data.outputs._is_initialized())
 
 async def test_get_data():
-    client = hypersync_fuel.HypersyncClient()
+    client = hyperfuel.HyperfuelClient()
     res = await client.get_data(QUERY)
 
 async def test_get_selected_data():
-    client = hypersync_fuel.HypersyncClient()
+    client = hyperfuel.HyperfuelClient()
     res = await client.get_selected_data(QUERY)
 
 async def test_preset_query_get_logs():
-    client = hypersync_fuel.HypersyncClient()
+    client = hyperfuel.HyperfuelClient()
     contracts = ["0xff63ad3cdb5fde197dfa2d248330d458bffe631bda65938aa7ab7e37efa561d0"]
     res = await client.preset_query_get_logs(emitting_contracts=contracts,from_block=8076516,to_block=8076517,)
 
 async def main():
-    print("smoke test hypersync-fuel-client-python")
+    print("smoke test hyperfuel-client-python")
     await test_create_parquet_folder()
     await test_get_height()
     await test_get_arrow_data()

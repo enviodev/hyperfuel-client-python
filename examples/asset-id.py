@@ -2,23 +2,23 @@
 #  `Inputs` where the address `0x0000000000000000000000000000000000000000000000000000000000000000` 
 # matches on the `asset_id` field.
 
-import hypersync_fuel
-from hypersync_fuel import InputField
+import hyperfuel
+from hyperfuel import InputField
 import asyncio
 
 async def main():
-    client = hypersync_fuel.HypersyncClient()
-    query = hypersync_fuel.HypersyncClient()
+    client = hyperfuel.HyperfuelClient()
+    query = hyperfuel.HyperfuelClient()
 
-    query = hypersync_fuel.Query(
+    query = hyperfuel.Query(
         from_block=7980000,
         to_block=7980100,
         inputs=[
-            hypersync_fuel.InputSelection(
+            hyperfuel.InputSelection(
                 asset_id=["0x0000000000000000000000000000000000000000000000000000000000000000"]
             )
         ],
-        field_selection=hypersync_fuel.FieldSelection(
+        field_selection=hyperfuel.FieldSelection(
             input=[
                 InputField.TX_ID,
                 InputField.BLOCK_HEIGHT,

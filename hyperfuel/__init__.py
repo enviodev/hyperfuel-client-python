@@ -1,4 +1,4 @@
-from .hypersync_fuel import HypersyncClient as _HypersyncClient
+from .hyperfuel import HyperfuelClient as _HyperfuelClient
 from typing import Optional
 from dataclasses import dataclass, asdict
 from strenum import StrEnum
@@ -175,10 +175,10 @@ class Query:
     max_num_blocks: Optional[int] = None
     max_num_transactions: Optional[int] = None
 
-class HypersyncClient:
+class HyperfuelClient:
     # Create a new client with given config
     def __init__(self, url="https://fuel-15.hypersync.xyz", bearer_token=None, http_req_timeout_millis=None):
-        self.inner = _HypersyncClient({
+        self.inner = _HyperfuelClient({
             "url": url,
             "bearer_token": bearer_token,
             "http_req_timeout_millis": http_req_timeout_millis

@@ -21,31 +21,31 @@ use pyo3::{
 pub use config::Config;
 
 #[pymodule]
-fn hypersync_fuel(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_class::<HypersyncClient>()
+fn hyperfuel(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_class::<HyperfuelClient>()
 }
 #[pyclass]
-pub struct HypersyncClient {
+pub struct HyperfuelClient {
     inner: Arc<skar_client_fuel::Client>,
 }
 
-impl HypersyncClient {
-    fn new_impl(config: Config) -> Result<HypersyncClient> {
+impl HyperfuelClient {
+    fn new_impl(config: Config) -> Result<HyperfuelClient> {
         env_logger::try_init().ok();
 
         let config = config.try_convert().context("parse config")?;
 
-        Ok(HypersyncClient {
+        Ok(HyperfuelClient {
             inner: Arc::new(skar_client_fuel::Client::new(config).context("create client")?),
         })
     }
 }
 
 #[pymethods]
-impl HypersyncClient {
+impl HyperfuelClient {
     /// Create a new client with given config
     #[new]
-    fn new(config: Config) -> PyResult<HypersyncClient> {
+    fn new(config: Config) -> PyResult<HyperfuelClient> {
         Self::new_impl(config).map_err(|e| PyIOError::new_err(format!("{:?}", e)))
     }
 

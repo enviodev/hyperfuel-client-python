@@ -1,21 +1,21 @@
-# hypersync-fuel-client-python
-Python package for [Envio's](https://envio.dev/) Hypersync-Fuel client written in Rust.
+# hyperfuel-client-python
+Python package for [Envio's](https://envio.dev/) hyperfuel client written in Rust.
 
-More information about Envio's Hypersync support of Fuel at [https://github.com/enviodev/hypersync-fuel-docs](https://github.com/enviodev/hypersync-fuel-docs)
+More information about Envio's Hyperfuel support of Fuel at [https://github.com/enviodev/hyperfuel-docs](https://github.com/enviodev/hyperfuel-docs)
 
 ## quickstart example
 ```bash
-$ pip install hypersync-fuel
+$ pip install hyperfuel
 ```
 
 ```python
 # This example will simply fetch the logs from the given contracts over a block range
 # returns all log data necessary for fuel's decoder
-import hypersync_fuel
+import hyperfuel
 import asyncio
 
 async def main():
-    client = hypersync_fuel.HypersyncClient()
+    client = hyperfuel.HyperfuelClient()
 
     contracts = ["0xff63ad3cdb5fde197dfa2d248330d458bffe631bda65938aa7ab7e37efa561d0"]
     from_block = 8076516
