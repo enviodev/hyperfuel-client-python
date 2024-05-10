@@ -1162,16 +1162,80 @@ dependencies = [
  "dict_derive",
  "env_logger",
  "faster-hex",
+ "hyperfuel-client",
+ "hyperfuel-format",
+ "hyperfuel-net-types",
  "itertools 0.12.1",
  "prefix-hex",
  "pyo3",
  "pyo3-asyncio",
  "serde",
  "serde_json",
- "skar-client-fuel",
- "skar-format-fuel",
- "skar-net-types-fuel",
  "tokio",
+]
+
+[[package]]
+name = "hyperfuel-client"
+version = "0.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0fd01a1c647f1ed619c2b734e19db1cc5ba50da560f309fcd878b3b94babab5c"
+dependencies = [
+ "alloy-dyn-abi",
+ "alloy-json-abi",
+ "anyhow",
+ "arrayvec",
+ "arrow2",
+ "capnp",
+ "fastrange-rs",
+ "futures",
+ "hyperfuel-format",
+ "hyperfuel-net-types",
+ "hyperfuel-schema",
+ "log",
+ "rand",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-util",
+ "url",
+ "xxhash-rust",
+]
+
+[[package]]
+name = "hyperfuel-format"
+version = "0.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "349dbdda23441b38f48555f72e82af522e34aa67072776ee6dbc99e5ff1ae614"
+dependencies = [
+ "arrayvec",
+ "derive_more",
+ "faster-hex",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "hyperfuel-net-types"
+version = "0.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "daf7ac78f60db4327c69b2833bde4fc6c4304de068a798dec830560080179fbf"
+dependencies = [
+ "arrayvec",
+ "capnp",
+ "capnpc",
+ "hyperfuel-format",
+ "serde",
+]
+
+[[package]]
+name = "hyperfuel-schema"
+version = "0.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c4ee2a2ac4d968d73056a67395fd234bfb67a35571bc90e9cfa1ae2e735f696c"
+dependencies = [
+ "anyhow",
+ "arrow2",
 ]
 
 [[package]]
@@ -2205,70 +2269,6 @@ name = "simdutf8"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f27f6278552951f1f2b8cf9da965d10969b2efdea95a6ec47987ab46edfe263a"
-
-[[package]]
-name = "skar-client-fuel"
-version = "0.0.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f575c142d1433dc4b45f390ce6592adca4bac974ebc64c3fb641699b8304d2b0"
-dependencies = [
- "alloy-dyn-abi",
- "alloy-json-abi",
- "anyhow",
- "arrayvec",
- "arrow2",
- "capnp",
- "fastrange-rs",
- "futures",
- "log",
- "rand",
- "reqwest",
- "serde",
- "serde_json",
- "skar-format-fuel",
- "skar-net-types-fuel",
- "skar-schema-fuel",
- "tokio",
- "tokio-util",
- "url",
- "xxhash-rust",
-]
-
-[[package]]
-name = "skar-format-fuel"
-version = "0.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a778e4a92ad675cc4dab3fdd6e3bc5773bd869b016981847810cd80420b52e68"
-dependencies = [
- "arrayvec",
- "derive_more",
- "faster-hex",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "skar-net-types-fuel"
-version = "0.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6db34cb9577e7f688d53f847591a9c09e41d9d938362a8ff0c4a5f8ef683df76"
-dependencies = [
- "arrayvec",
- "capnp",
- "capnpc",
- "serde",
- "skar-format-fuel",
-]
-
-[[package]]
-name = "skar-schema-fuel"
-version = "0.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e5d04f359bba0ce6410346eb31c3a8e78c6a6e7335202f23cbee92a38b63117"
-dependencies = [
- "anyhow",
- "arrow2",
-]
 
 [[package]]
 name = "slab"

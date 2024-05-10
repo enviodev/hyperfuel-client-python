@@ -1,5 +1,5 @@
+use hyperfuel_format::Hex;
 use pyo3::{pyclass, pymethods, PyObject, PyResult};
-use skar_format_fuel::Hex;
 
 use crate::types::{Block, Input, Output, Receipt, Transaction};
 
@@ -129,8 +129,8 @@ impl QueryResponseDataTyped {
     }
 }
 
-impl From<skar_client_fuel::QueryResponseTyped> for QueryResponseTyped {
-    fn from(r: skar_client_fuel::QueryResponseTyped) -> Self {
+impl From<hyperfuel_client::QueryResponseTyped> for QueryResponseTyped {
+    fn from(r: hyperfuel_client::QueryResponseTyped) -> Self {
         let archive_height = r.archive_height;
         let next_block = r.next_block;
         let total_execution_time = r.total_execution_time;
@@ -226,8 +226,8 @@ impl LogContext {
     }
 }
 
-impl From<skar_client_fuel::LogResponse> for LogResponse {
-    fn from(r: skar_client_fuel::LogResponse) -> Self {
+impl From<hyperfuel_client::LogResponse> for LogResponse {
+    fn from(r: hyperfuel_client::LogResponse) -> Self {
         let archive_height = r.archive_height;
         let next_block = r.next_block;
         let total_execution_time = r.total_execution_time;

@@ -2,10 +2,10 @@ use anyhow::{Context, Result};
 use arrow2::datatypes::Field;
 use arrow2::ffi;
 use arrow2::{array::StructArray, datatypes::DataType};
+use hyperfuel_client::ArrowBatch;
 use pyo3::ffi::Py_uintptr_t;
 use pyo3_asyncio::tokio::future_into_py;
 use response::{LogResponse, QueryResponseArrow, QueryResponseArrowData, QueryResponseTyped};
-use skar_client_fuel::ArrowBatch;
 use std::sync::Arc;
 
 mod config;
@@ -26,7 +26,7 @@ fn hyperfuel(_py: Python, m: &PyModule) -> PyResult<()> {
 }
 #[pyclass]
 pub struct HyperfuelClient {
-    inner: Arc<skar_client_fuel::Client>,
+    inner: Arc<hyperfuel_client::Client>,
 }
 
 impl HyperfuelClient {
@@ -36,7 +36,7 @@ impl HyperfuelClient {
         let config = config.try_convert().context("parse config")?;
 
         Ok(HyperfuelClient {
-            inner: Arc::new(skar_client_fuel::Client::new(config).context("create client")?),
+            inner: Arc::new(hyperfuel_client::Client::new(config).context("create client")?),
         })
     }
 }

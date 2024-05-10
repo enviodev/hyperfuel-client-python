@@ -153,17 +153,17 @@ pub struct Query {
 }
 
 impl Query {
-    pub fn try_convert(&self) -> Result<skar_net_types_fuel::Query> {
+    pub fn try_convert(&self) -> Result<hyperfuel_net_types::Query> {
         let json = serde_json::to_vec(self).context("serialize to json")?;
         serde_json::from_slice(&json).context("parse json")
     }
 }
 
-impl TryFrom<skar_net_types_fuel::Query> for Query {
+impl TryFrom<hyperfuel_net_types::Query> for Query {
     type Error = anyhow::Error;
 
-    fn try_from(skar_query: skar_net_types_fuel::Query) -> Result<Self> {
-        let json = serde_json::to_vec(&skar_query).context("serialize query to json")?;
+    fn try_from(hyperfuel_query: hyperfuel_net_types::Query) -> Result<Self> {
+        let json = serde_json::to_vec(&hyperfuel_query).context("serialize query to json")?;
         serde_json::from_slice(&json).context("parse json")
     }
 }

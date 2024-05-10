@@ -1,5 +1,5 @@
+use hyperfuel_format::Hex;
 use pyo3::{pyclass, pymethods, PyResult};
-use skar_format_fuel::Hex;
 
 /// The block header contains metadata about a certain block.
 #[pyclass]
@@ -299,8 +299,8 @@ impl Output {
     }
 }
 
-impl From<skar_format_fuel::BlockHeader> for Block {
-    fn from(b: skar_format_fuel::BlockHeader) -> Self {
+impl From<hyperfuel_format::BlockHeader> for Block {
+    fn from(b: hyperfuel_format::BlockHeader) -> Self {
         Self {
             id: b.id.encode_hex(),
             da_height: b.da_height.into(),
@@ -316,8 +316,8 @@ impl From<skar_format_fuel::BlockHeader> for Block {
     }
 }
 
-impl From<skar_format_fuel::Transaction> for Transaction {
-    fn from(t: skar_format_fuel::Transaction) -> Self {
+impl From<hyperfuel_format::Transaction> for Transaction {
+    fn from(t: hyperfuel_format::Transaction) -> Self {
         Self {
             block_height: t.block_height.into(),
             id: t.id.encode_hex(),
@@ -362,8 +362,8 @@ impl From<skar_format_fuel::Transaction> for Transaction {
     }
 }
 
-impl From<skar_format_fuel::Receipt> for Receipt {
-    fn from(r: skar_format_fuel::Receipt) -> Self {
+impl From<hyperfuel_format::Receipt> for Receipt {
+    fn from(r: hyperfuel_format::Receipt) -> Self {
         Self {
             receipt_index: r.receipt_index.into(),
             root_contract_id: r.root_contract_id.map(|d| d.encode_hex()),
@@ -400,8 +400,8 @@ impl From<skar_format_fuel::Receipt> for Receipt {
     }
 }
 
-impl From<skar_format_fuel::Input> for Input {
-    fn from(i: skar_format_fuel::Input) -> Self {
+impl From<hyperfuel_format::Input> for Input {
+    fn from(i: hyperfuel_format::Input) -> Self {
         Self {
             tx_id: i.tx_id.encode_hex(),
             block_height: i.block_height.into(),
@@ -427,8 +427,8 @@ impl From<skar_format_fuel::Input> for Input {
     }
 }
 
-impl From<skar_format_fuel::Output> for Output {
-    fn from(r: skar_format_fuel::Output) -> Self {
+impl From<hyperfuel_format::Output> for Output {
+    fn from(r: hyperfuel_format::Output) -> Self {
         Self {
             tx_id: r.tx_id.encode_hex(),
             block_height: r.block_height.into(),
