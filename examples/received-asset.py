@@ -17,9 +17,9 @@ async def main():
         # which receipts to return data from
         receipts=[
             hyperfuel.ReceiptSelection(
-                # only return receipts that have `asset_id` field = this asset_id
+                # only return receipts that have `asset_id` field = this asset_id...
                 asset_id=[asset_id],
-                # AND that are type 8 (TransferOut)
+                # ...AND that are type 8 (TransferOut)
                 receipt_type=[8] 
             ),
         ],
