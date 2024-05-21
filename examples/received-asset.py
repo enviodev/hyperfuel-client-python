@@ -36,6 +36,7 @@ async def main():
 
     res = await client.get_selected_data(query)
 
+    # fields that aren't selected will be None by default
     print("receipts: " + str(res.data.receipts))
 
 asyncio.run(main())
