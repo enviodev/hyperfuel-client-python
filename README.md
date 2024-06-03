@@ -1,7 +1,7 @@
 # hyperfuel-client-python
-Python package for [Envio's](https://envio.dev/) hyperfuel client written in Rust.
+Python package for [Envio's](https://envio.dev/) Hyperfuel client written in Rust.
 
-More information about Envio's Hyperfuel support of Fuel at [https://github.com/enviodev/hyperfuel-docs](https://github.com/enviodev/hyperfuel-docs)
+More information about Envio's support of Fuel at [docs.envio.dev/docs/hyperfuel](https://docs.envio.dev/docs/hyperfuel).
 
 ## quickstart example
 ```bash
