@@ -10,10 +10,13 @@ async def main():
     client = hyperfuel.HyperfuelClient()
 
     # asset_id we want to get all transfersOut receipts for
-    asset_id="0x0000000000000000000000000000000000000000000000000000000000000000"
+    asset_id="0x2a0d0ed9d2217ec7f32dcd9a1902ce2a66d68437aeff84e3a3cc8bebee0d2eea"
 
     query = hyperfuel.Query(
+        # start query from block 0
         from_block=0,
+        # if to_block is not set, query runs to the end of the chain
+        to_block = 1299067, 
         # which receipts to return data from
         receipts=[
             hyperfuel.ReceiptSelection(
