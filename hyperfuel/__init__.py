@@ -138,6 +138,7 @@ class ReceiptSelection:
     rb: Optional[list[str]] = None
     rc: Optional[list[str]] = None
     rd: Optional[list[str]] = None
+    tx_status: Optional[list[int]] = None
 
 @dataclass
 class InputSelection:
@@ -147,6 +148,7 @@ class InputSelection:
     sender: Optional[list[str]] = None
     recipient: Optional[list[str]] = None
     input_type: Optional[list[str]] = None
+    tx_status: Optional[list[int]] = None
 
 @dataclass
 class OutputSelection:
@@ -154,6 +156,7 @@ class OutputSelection:
     asset_id: Optional[list[str]] = None
     contract: Optional[list[str]] = None
     output_type: Optional[list[str]] = None
+    tx_status: Optional[list[int]] = None
 
 @dataclass
 class FieldSelection:
@@ -177,7 +180,7 @@ class Query:
 
 class HyperfuelClient:
     # Create a new client with given config
-    def __init__(self, url="https://fuel-15.hypersync.xyz", bearer_token=None, http_req_timeout_millis=None):
+    def __init__(self, url="https://fuel-testnet.hypersync.xyz", bearer_token=None, http_req_timeout_millis=None):
         self.inner = _HyperfuelClient({
             "url": url,
             "bearer_token": bearer_token,
