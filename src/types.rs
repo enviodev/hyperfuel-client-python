@@ -10,6 +10,10 @@ pub struct Block {
     pub id: String,
     /// The block height for the data availability layer up to which (inclusive) input messages are processed.
     pub da_height: u64,
+    /// version of consensus
+    pub consensus_parameters_version: u64,
+    /// version of the state transition
+    pub state_transition_bytecode_version: u64,
     /// The number of transactions in the block.
     pub transactions_count: String,
     /// The number of receipt messages in the block.
@@ -17,7 +21,8 @@ pub struct Block {
     /// The merkle root of the transactions in the block.
     pub transactions_root: String,
     /// The merkle root of the receipt messages in the block.
-    pub message_receipt_root: String,
+    pub message_outbox_root: String,
+    pub event_inbox_root: String,
     /// The block height.
     pub height: u64,
     /// The merkle root of all previous consensus header Stringes (not including this block).
@@ -66,16 +71,19 @@ pub struct Transaction {
     pub input_contract_tx_pointer_tx_index: Option<u64>,
     /// The contract id for a contract used for the transaction input.
     pub input_contract: Option<String>,
-    /// The gas price for the transaction.
-    pub gas_price: Option<u64>,
-    /// The gas limit for the transaction.
-    pub gas_limit: Option<u64>,
+    pub policies_tip: Option<u64>,
+    pub policies_witness_limit: Option<u64>,
+    pub policies_maturity: Option<u64>,
+    pub policies_max_fee: Option<u64>,
+    /// The gas limit for the script.
+    pub script_gas_limit: Option<u64>,
     /// The minimum block height that the transaction can be included at.
     pub maturity: Option<u64>,
     /// The amount minted in the transaction.
     pub mint_amount: Option<u64>,
     /// The asset ID for coins minted in the transaction.
     pub mint_asset_id: Option<String>,
+    pub mint_gas_price: Option<u64>,
     /// The location of the transaction in the block.
     pub tx_pointer_block_height: Option<u64>,
     pub tx_pointer_tx_index: Option<u64>,
@@ -105,8 +113,13 @@ pub struct Transaction {
     pub script_data: Option<String>,
     /// The witness index of contract bytecode.
     pub bytecode_witness_index: Option<u64>,
-    /// The length of the transaction bytecode.
-    pub bytecode_length: Option<u64>,
+    pub bytecode_root: Option<String>,
+    pub subsection_index: Option<u64>,
+    pub subsections_number: Option<u64>,
+    pub proof_set: Option<String>,
+    pub consensus_parameters_upgrade_purpose_witness_index: Option<u64>,
+    pub consensus_parameters_upgrade_purpose_checksum: Option<String>,
+    pub state_transition_upgrade_purpose_root: Option<String>,
     /// The salt value for the transaction.
     pub salt: Option<String>,
 }
@@ -133,6 +146,8 @@ pub struct Receipt {
     pub root_contract_id: Option<String>,
     /// transaction that this receipt originated from
     pub tx_id: String,
+    /// The status type of the transaction this receipt originated from
+    pub tx_status: u8,
     /// block that the receipt originated in
     pub block_height: u64,
     /// The value of the program counter register $pc, which is the memory address of the current instruction.
@@ -209,6 +224,8 @@ impl Receipt {
 pub struct Input {
     /// transaction that this input originated from
     pub tx_id: String,
+    /// The status type of the transaction this input originated from
+    pub tx_status: u8,
     /// block that the input originated in
     pub block_height: u64,
     /// InputCoin, InputContract, or InputMessage
@@ -267,6 +284,8 @@ impl Input {
 pub struct Output {
     /// transaction that this out originated from
     pub tx_id: String,
+    /// The status type of the transaction this receipt originated from
+    pub tx_status: u8,
     /// block that the output originated in
     pub block_height: u64,
     /// CoinOutput, ContractOutput, ChangeOutput, VariableOutput, or ContractCreated
@@ -307,11 +326,14 @@ impl From<hyperfuel_format::BlockHeader> for Block {
             transactions_count: b.transactions_count.encode_hex(),
             message_receipt_count: b.message_receipt_count.encode_hex(),
             transactions_root: b.transactions_root.encode_hex(),
-            message_receipt_root: b.message_receipt_root.encode_hex(),
             height: b.height.into(),
             prev_root: b.prev_root.encode_hex(),
             time: b.time.into(),
             application_hash: b.application_hash.encode_hex(),
+            consensus_parameters_version: b.consensus_parameters_version.into(),
+            state_transition_bytecode_version: b.state_transition_bytecode_version.into(),
+            message_outbox_root: b.message_outbox_root.encode_hex(),
+            event_inbox_root: b.event_inbox_root.encode_hex(),
         }
     }
 }
@@ -332,32 +354,48 @@ impl From<hyperfuel_format::Transaction> for Transaction {
             input_contract_state_root: t.input_contract_state_root.map(|d| d.encode_hex()),
             input_contract_tx_pointer_block_height: t
                 .input_contract_tx_pointer_block_height
-                .map(|d| d.into()),
+                .map(|t| t.into()),
             input_contract_tx_pointer_tx_index: t
                 .input_contract_tx_pointer_tx_index
-                .map(|d| d.into()),
+                .map(|t| t.into()),
             input_contract: t.input_contract.map(|d| d.encode_hex()),
-            gas_price: t.gas_price.map(|d| d.into()),
-            gas_limit: t.gas_limit.map(|d| d.into()),
-            maturity: t.maturity.map(|d| d.into()),
-            mint_amount: t.mint_amount.map(|d| d.into()),
+            maturity: t.maturity.map(|t| t.into()),
+            mint_amount: t.mint_amount.map(|t| t.into()),
             mint_asset_id: t.mint_asset_id.map(|d| d.encode_hex()),
-            tx_pointer_block_height: t.tx_pointer_block_height.map(|d| d.into()),
-            tx_pointer_tx_index: t.tx_pointer_tx_index.map(|d| d.into()),
+            tx_pointer_block_height: t.tx_pointer_block_height.map(|t| t.into()),
+            tx_pointer_tx_index: t.tx_pointer_tx_index.map(|t| t.into()),
             tx_type: t.tx_type.to_u8(),
-            output_contract_input_index: t.output_contract_input_index.map(|d| d.into()),
+            output_contract_input_index: t.output_contract_input_index.map(|t| t.into()),
             output_contract_balance_root: t.output_contract_balance_root.map(|d| d.encode_hex()),
             output_contract_state_root: t.output_contract_state_root.map(|d| d.encode_hex()),
             witnesses: t.witnesses.map(|d| d.encode_hex()),
             receipts_root: t.receipts_root.map(|d| d.encode_hex()),
             status: t.status.as_u8(),
             time: t.time.into(),
-            reason: t.reason.map(|d| d.into()),
+            reason: t.reason,
             script: t.script.map(|d| d.encode_hex()),
             script_data: t.script_data.map(|d| d.encode_hex()),
-            bytecode_witness_index: t.bytecode_witness_index.map(|d| d.into()),
-            bytecode_length: t.bytecode_length.map(|d| d.into()),
+            bytecode_witness_index: t.bytecode_witness_index.map(|t| t.into()),
             salt: t.salt.map(|d| d.encode_hex()),
+            policies_tip: t.policies_tip.map(|t| t.into()),
+            policies_witness_limit: t.policies_witness_limit.map(|t| t.into()),
+            policies_maturity: t.policies_maturity.map(|t| t.into()),
+            policies_max_fee: t.policies_max_fee.map(|t| t.into()),
+            script_gas_limit: t.script_gas_limit.map(|t| t.into()),
+            mint_gas_price: t.mint_amount.map(|t| t.into()),
+            bytecode_root: t.bytecode_root.map(|r| r.encode_hex()),
+            subsection_index: t.subsection_index.map(|t| t.into()),
+            subsections_number: t.subsections_number.map(|t| t.into()),
+            proof_set: t.proof_set.map(|p| p.encode_hex()),
+            consensus_parameters_upgrade_purpose_witness_index: t
+                .consensus_parameters_upgrade_purpose_witness_index
+                .map(|t| t.into()),
+            consensus_parameters_upgrade_purpose_checksum: t
+                .consensus_parameters_upgrade_purpose_checksum
+                .map(|a| a.encode_hex()),
+            state_transition_upgrade_purpose_root: t
+                .state_transition_upgrade_purpose_root
+                .map(|a| a.encode_hex()),
         }
     }
 }
@@ -368,6 +406,7 @@ impl From<hyperfuel_format::Receipt> for Receipt {
             receipt_index: r.receipt_index.into(),
             root_contract_id: r.root_contract_id.map(|d| d.encode_hex()),
             tx_id: r.tx_id.encode_hex(),
+            tx_status: r.tx_status.as_u8(),
             block_height: r.block_height.into(),
             pc: r.pc.map(|d| d.into()),
             is: r.is.map(|d| d.into()),
@@ -404,6 +443,7 @@ impl From<hyperfuel_format::Input> for Input {
     fn from(i: hyperfuel_format::Input) -> Self {
         Self {
             tx_id: i.tx_id.encode_hex(),
+            tx_status: i.tx_status.as_u8(),
             block_height: i.block_height.into(),
             input_type: i.input_type.as_u8(),
             utxo_id: i.utxo_id.map(|d| d.encode_hex()),
@@ -428,18 +468,19 @@ impl From<hyperfuel_format::Input> for Input {
 }
 
 impl From<hyperfuel_format::Output> for Output {
-    fn from(r: hyperfuel_format::Output) -> Self {
+    fn from(o: hyperfuel_format::Output) -> Self {
         Self {
-            tx_id: r.tx_id.encode_hex(),
-            block_height: r.block_height.into(),
-            output_type: r.output_type.as_u8(),
-            to: r.to.map(|d| d.encode_hex()),
-            amount: r.amount.map(|d| d.into()),
-            asset_id: r.asset_id.map(|d| d.encode_hex()),
-            input_index: r.input_index.map(|d| d.into()),
-            balance_root: r.balance_root.map(|d| d.encode_hex()),
-            state_root: r.state_root.map(|d| d.encode_hex()),
-            contract: r.contract.map(|d| d.encode_hex()),
+            tx_id: o.tx_id.encode_hex(),
+            tx_status: o.tx_status.as_u8(),
+            block_height: o.block_height.into(),
+            output_type: o.output_type.as_u8(),
+            to: o.to.map(|d| d.encode_hex()),
+            amount: o.amount.map(|d| d.into()),
+            asset_id: o.asset_id.map(|d| d.encode_hex()),
+            input_index: o.input_index.map(|d| d.into()),
+            balance_root: o.balance_root.map(|d| d.encode_hex()),
+            state_root: o.state_root.map(|d| d.encode_hex()),
+            contract: o.contract.map(|d| d.encode_hex()),
         }
     }
 }

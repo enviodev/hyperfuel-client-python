@@ -1176,9 +1176,9 @@ dependencies = [
 
 [[package]]
 name = "hyperfuel-client"
-version = "0.0.7"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fd01a1c647f1ed619c2b734e19db1cc5ba50da560f309fcd878b3b94babab5c"
+checksum = "a54255a36a9065613a465d9b3722408f4a440ae13bf968caf5fb40217f06ad14"
 dependencies = [
  "alloy-dyn-abi",
  "alloy-json-abi",
@@ -1204,9 +1204,9 @@ dependencies = [
 
 [[package]]
 name = "hyperfuel-format"
-version = "0.0.4"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "349dbdda23441b38f48555f72e82af522e34aa67072776ee6dbc99e5ff1ae614"
+checksum = "8b9a25467d0b56323744fd8449fff45d6e84aac32661b038a1f80717b19def4b"
 dependencies = [
  "arrayvec",
  "derive_more",
@@ -1217,9 +1217,9 @@ dependencies = [
 
 [[package]]
 name = "hyperfuel-net-types"
-version = "0.0.3"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "daf7ac78f60db4327c69b2833bde4fc6c4304de068a798dec830560080179fbf"
+checksum = "886d5c048dad316fa13f1a2f334ac61f3e31a7bba473552446ce2d2c17fe1e5b"
 dependencies = [
  "arrayvec",
  "capnp",
@@ -1230,9 +1230,9 @@ dependencies = [
 
 [[package]]
 name = "hyperfuel-schema"
-version = "0.0.2"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4ee2a2ac4d968d73056a67395fd234bfb67a35571bc90e9cfa1ae2e735f696c"
+checksum = "2af4be74dff6ebabb653ba38412fa029b72f4f9b5a9a46ab955aace8148ae02c"
 dependencies = [
  "anyhow",
  "arrow2",
