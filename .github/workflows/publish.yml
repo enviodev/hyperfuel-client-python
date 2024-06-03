@@ -3,7 +3,7 @@
 #
 #    maturin generate-ci github
 #
-name: CI
+name: Publish to PyPi
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
