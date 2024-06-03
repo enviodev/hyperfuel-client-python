@@ -349,6 +349,7 @@ fn hex_str_address_to_byte_array(hex_str: &str) -> Result<[u8; 32], String> {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 /// Construct response and centralize error mapping for calling function.
 fn compose_pyarrow_response(
     archive_height: Option<u64>,
@@ -361,14 +362,9 @@ fn compose_pyarrow_response(
     outputs: PyObject,
 ) -> Result<QueryResponseArrow> {
     Ok(QueryResponseArrow {
-        archive_height: archive_height
-            .map(|h| h.try_into())
-            .transpose()
-            .context("convert height")?,
-        next_block: next_block.try_into().context("convert next_block")?,
-        total_execution_time: total_execution_time
-            .try_into()
-            .context("convert total_execution_time")?,
+        archive_height,
+        next_block,
+        total_execution_time,
         data: QueryResponseArrowData {
             blocks,
             transactions,

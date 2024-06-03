@@ -4,11 +4,11 @@ from hyperfuel import BlockField, TransactionField, ReceiptField, InputField, Ou
 
 
 QUERY = hyperfuel.Query(
-    from_block=8076516,
-    to_block=8076517,
+    from_block=0,
+    to_block=1554360,
     receipts=[
         hyperfuel.ReceiptSelection(
-            root_contract_id=["0xff63ad3cdb5fde197dfa2d248330d458bffe631bda65938aa7ab7e37efa561d0"],
+            root_contract_id=["0x4a2ce054e3e94155f7092f7365b212f7f45105b74819c623744ebcc5d065c6ac"],
             receipt_type=[5, 6]
         )
     ],
@@ -56,16 +56,16 @@ async def test_get_arrow_data():
     import pyarrow
     client = hyperfuel.HyperfuelClient()
     res = await client.get_arrow_data(QUERY)
-    assert(type(res.data.blocks) == pyarrow.lib.Table)
     assert(res.data.blocks._is_initialized())
-    assert(type(res.data.transactions) == pyarrow.lib.Table)
+    assert(type(res.data.blocks) == pyarrow.lib.Table)
     assert(res.data.transactions._is_initialized())
-    assert(type(res.data.receipts) == pyarrow.lib.Table)
+    assert(type(res.data.transactions) == pyarrow.lib.Table)
     assert(res.data.receipts._is_initialized())
-    assert(type(res.data.inputs) == pyarrow.lib.Table)
+    assert(type(res.data.receipts) == pyarrow.lib.Table)
     assert(res.data.inputs._is_initialized())
-    assert(type(res.data.outputs) == pyarrow.lib.Table)
+    assert(type(res.data.inputs) == pyarrow.lib.Table)
     assert(res.data.outputs._is_initialized())
+    assert(type(res.data.outputs) == pyarrow.lib.Table)
 
 async def test_get_data():
     client = hyperfuel.HyperfuelClient()

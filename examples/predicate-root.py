@@ -10,11 +10,13 @@ async def main():
     client = hyperfuel.HyperfuelClient()
 
     query = hyperfuel.Query(
-        from_block=4105960,
-        to_block=4106000,
+        # start query from block 0
+        from_block = 0,
+        # if to_block is not set, query runs to the end of the chain
+        to_block=1427625,
         inputs=[
             hyperfuel.InputSelection(
-                owner=["0x48a0f31c78e1c837ff6a885785ceb7c2090f86ed93db3ed2d8821d13739fe981"]
+                owner=["0x94a8e322ff02baeb1d625e83dadf5ec88870ac801da370d4b15bbd5f0af01169"]
             )
         ],
         field_selection=hyperfuel.FieldSelection(

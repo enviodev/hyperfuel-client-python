@@ -1,5 +1,5 @@
-#  We query from blocks 7980000 (inclusive) to 7980100 (exclusive) for all
-#  `Inputs` where the address `0x0000000000000000000000000000000000000000000000000000000000000000` 
+#  We query from blocks 0 (inclusive) to 1299067 (exclusive) for all
+#  `Inputs` where the address `0x2a0d0ed9d2217ec7f32dcd9a1902ce2a66d68437aeff84e3a3cc8bebee0d2eea` 
 # matches on the `asset_id` field.
 
 import hyperfuel
@@ -10,13 +10,17 @@ async def main():
     client = hyperfuel.HyperfuelClient()
 
     query = hyperfuel.Query(
-        from_block=7980000,
-        to_block=7980100,
+        # start query from block 0
+        from_block=0,
+        # if to_block is not set, query runs to the end of the chain
+        to_block = 1299067, 
+        # which inputs to return data from
         inputs=[
             hyperfuel.InputSelection(
-                asset_id=["0x0000000000000000000000000000000000000000000000000000000000000000"]
+                asset_id=["0x2a0d0ed9d2217ec7f32dcd9a1902ce2a66d68437aeff84e3a3cc8bebee0d2eea"]
             )
         ],
+        # what data we want returned from the inputs we queried for
         field_selection=hyperfuel.FieldSelection(
             input=[
                 InputField.TX_ID,
