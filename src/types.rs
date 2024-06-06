@@ -148,6 +148,8 @@ pub struct Receipt {
     pub tx_id: String,
     /// The status type of the transaction this receipt originated from
     pub tx_status: u8,
+    /// The type of the transaction this receipt originated from
+    pub tx_type: u8,
     /// block that the receipt originated in
     pub block_height: u64,
     /// The value of the program counter register $pc, which is the memory address of the current instruction.
@@ -226,6 +228,8 @@ pub struct Input {
     pub tx_id: String,
     /// The status type of the transaction this input originated from
     pub tx_status: u8,
+    /// The type of the transaction this input originated from
+    pub tx_type: u8,
     /// block that the input originated in
     pub block_height: u64,
     /// InputCoin, InputContract, or InputMessage
@@ -286,6 +290,8 @@ pub struct Output {
     pub tx_id: String,
     /// The status type of the transaction this receipt originated from
     pub tx_status: u8,
+    /// The type of the transaction this output originated from
+    pub tx_type: u8,
     /// block that the output originated in
     pub block_height: u64,
     /// CoinOutput, ContractOutput, ChangeOutput, VariableOutput, or ContractCreated
@@ -407,6 +413,7 @@ impl From<hyperfuel_format::Receipt> for Receipt {
             root_contract_id: r.root_contract_id.map(|d| d.encode_hex()),
             tx_id: r.tx_id.encode_hex(),
             tx_status: r.tx_status.as_u8(),
+            tx_type: r.tx_type.to_u8(),
             block_height: r.block_height.into(),
             pc: r.pc.map(|d| d.into()),
             is: r.is.map(|d| d.into()),
@@ -444,6 +451,7 @@ impl From<hyperfuel_format::Input> for Input {
         Self {
             tx_id: i.tx_id.encode_hex(),
             tx_status: i.tx_status.as_u8(),
+            tx_type: i.tx_type.to_u8(),
             block_height: i.block_height.into(),
             input_type: i.input_type.as_u8(),
             utxo_id: i.utxo_id.map(|d| d.encode_hex()),
@@ -472,6 +480,7 @@ impl From<hyperfuel_format::Output> for Output {
         Self {
             tx_id: o.tx_id.encode_hex(),
             tx_status: o.tx_status.as_u8(),
+            tx_type: o.tx_type.to_u8(),
             block_height: o.block_height.into(),
             output_type: o.output_type.as_u8(),
             to: o.to.map(|d| d.encode_hex()),

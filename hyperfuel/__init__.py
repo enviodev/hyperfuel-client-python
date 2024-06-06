@@ -61,6 +61,8 @@ class ReceiptField(StrEnum):
     RECEIPT_INDEX = 'receipt_index'
     ROOT_CONTRACT_ID = 'root_contract_id'
     TX_ID = 'tx_id'
+    TX_STATUS = 'tx_status'
+    TX_TYPE = 'tx_type'
     BLOCK_HEIGHT = 'block_height'
     PC = 'pc'
     IS = 'is'
@@ -92,6 +94,8 @@ class ReceiptField(StrEnum):
 
 class InputField(StrEnum):
     TX_ID = 'tx_id'
+    TX_STATUS = 'tx_status'
+    TX_TYPE = 'tx_type'
     BLOCK_HEIGHT = 'block_height'
     INPUT_TYPE = 'input_type'
     UTXO_ID = 'utxo_id'
@@ -114,6 +118,8 @@ class InputField(StrEnum):
 
 class OutputField(StrEnum):
     TX_ID = 'tx_id'
+    TX_STATUS = 'tx_status'
+    TX_TYPE = 'tx_type'
     BLOCK_HEIGHT = 'block_height'
     OUTPUT_TYPE = 'output_type'
     TO = 'to'
@@ -139,6 +145,8 @@ class ReceiptSelection:
     rc: Optional[list[str]] = None
     rd: Optional[list[str]] = None
     tx_status: Optional[list[int]] = None
+    tx_type: Optional[list[int]] = None
+
 
 @dataclass
 class InputSelection:
@@ -149,6 +157,8 @@ class InputSelection:
     recipient: Optional[list[str]] = None
     input_type: Optional[list[str]] = None
     tx_status: Optional[list[int]] = None
+    tx_type: Optional[list[int]] = None
+
 
 @dataclass
 class OutputSelection:
@@ -157,6 +167,8 @@ class OutputSelection:
     contract: Optional[list[str]] = None
     output_type: Optional[list[str]] = None
     tx_status: Optional[list[int]] = None
+    tx_type: Optional[list[int]] = None
+
 
 @dataclass
 class FieldSelection:
