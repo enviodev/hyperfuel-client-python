@@ -1155,7 +1155,7 @@ dependencies = [
 
 [[package]]
 name = "hyperfuel"
-version = "1.1.0"
+version = "1.1.1"
 dependencies = [
  "anyhow",
  "arrow2",
@@ -1176,9 +1176,9 @@ dependencies = [
 
 [[package]]
 name = "hyperfuel-client"
-version = "2.1.0"
+version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f84071fea79643ffcc2c70de66f529ae55186b9f16c10550991f8fd9c87211a"
+checksum = "65d0f100e9be491b05b4bcd98351f8da9e1864aad3ec2c1971230b0a49d189e2"
 dependencies = [
  "alloy-dyn-abi",
  "alloy-json-abi",
