@@ -14,7 +14,7 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn try_convert(&self) -> Result<hyperfuel_client::Config> {
+    pub fn try_convert(&self) -> Result<hyperfuel_client::ClientConfig> {
         let json = serde_json::to_vec(self).context("serialize to json")?;
         serde_json::from_slice(&json).context("parse json")
     }

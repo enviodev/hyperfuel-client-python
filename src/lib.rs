@@ -1,8 +1,9 @@
 use anyhow::{Context, Result};
-use arrow2::datatypes::Field;
-use arrow2::ffi;
-use arrow2::{array::StructArray, datatypes::DataType};
-use hyperfuel_client::ArrowBatch;
+use hyperfuel_client::{ArrowBatch, StreamConfig};
+use hyperfuel_net_types::JoinMode;
+use polars_arrow::array::StructArray;
+use polars_arrow::datatypes::{ArrowDataType as DataType, Field};
+use polars_arrow::ffi;
 use pyo3::ffi::Py_uintptr_t;
 use pyo3_asyncio::tokio::future_into_py;
 use response::{LogResponse, QueryResponseArrow, QueryResponseArrowData, QueryResponseTyped};
@@ -71,7 +72,7 @@ impl HyperfuelClient {
         let inner = Arc::clone(&self.inner);
         future_into_py::<_, u64>(py, async move {
             let height: u64 = inner
-                .get_height_with_retry()
+                .get_height()
                 .await
                 .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
 
@@ -101,7 +102,7 @@ impl HyperfuelClient {
                 .map_err(|_e| PyValueError::new_err("parsing query"))?;
 
             inner
-                .create_parquet_folder(query, path)
+                .collect_parquet(&path, query, StreamConfig::default())
                 .await
                 .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
 
@@ -121,12 +122,15 @@ impl HyperfuelClient {
         let inner = Arc::clone(&self.inner);
 
         future_into_py::<_, QueryResponseTyped>(py, async move {
-            let query = query
+            let mut query = query
                 .try_convert()
                 .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
 
+            query.join_mode = JoinMode::JoinAll;
+            let query = query;
+
             let res = inner
-                .get_data(&query)
+                .get(&query)
                 .await
                 .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
 
@@ -146,12 +150,15 @@ impl HyperfuelClient {
         let inner = Arc::clone(&self.inner);
 
         future_into_py::<_, QueryResponseTyped>(py, async move {
-            let query = query
+            let mut query = query
                 .try_convert()
                 .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
 
+            query.join_mode = JoinMode::JoinNothing;
+            let query = query;
+
             let res = inner
-                .get_selected_data(&query)
+                .get(&query)
                 .await
                 .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
 
@@ -179,7 +186,7 @@ impl HyperfuelClient {
         let inner = Arc::clone(&self.inner);
 
         // cut the "0x" off the address
-        let mut emitting_contracts_args = vec![];
+        let mut emitting_contracts_args: Vec<hyperfuel_format::Hash> = vec![];
         for contract_address in emitting_contracts {
             let address: &str = if &contract_address[..2] == "0x" {
                 &contract_address[2..]
@@ -188,12 +195,22 @@ impl HyperfuelClient {
             };
             let address = hex_str_address_to_byte_array(address)
                 .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
-            emitting_contracts_args.push(address)
+            emitting_contracts_args.push(address.into());
         }
+
+        let query = hyperfuel_net_types::Query {
+            from_block,
+            to_block,
+            receipts: vec![hyperfuel_net_types::ReceiptSelection {
+                contract_id: emitting_contracts_args,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
 
         future_into_py::<_, LogResponse>(py, async move {
             let res = inner
-                .preset_query_get_logs(emitting_contracts_args, from_block, to_block)
+                .get(&query)
                 .await
                 .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
 
@@ -223,7 +240,7 @@ impl HyperfuelClient {
                 .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
 
             let res = inner
-                .get_arrow_data(&query)
+                .get_arrow(&query)
                 .await
                 .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
 
@@ -292,7 +309,7 @@ impl HyperfuelClient {
                 .map_err(|e| PyValueError::new_err(format!("{:?}", e)))?;
 
             let res = inner
-                .get_arrow_data_with_retry(&query)
+                .get_arrow(&query)
                 .await
                 .map_err(|e| PyIOError::new_err(format!("{:?}", e)))?;
 

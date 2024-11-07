@@ -327,19 +327,55 @@ impl Output {
 impl From<hyperfuel_format::BlockHeader> for Block {
     fn from(b: hyperfuel_format::BlockHeader) -> Self {
         Self {
-            id: b.id.encode_hex(),
-            da_height: b.da_height.into(),
-            transactions_count: b.transactions_count.encode_hex(),
-            message_receipt_count: b.message_receipt_count.encode_hex(),
-            transactions_root: b.transactions_root.encode_hex(),
-            height: b.height.into(),
-            prev_root: b.prev_root.encode_hex(),
-            time: b.time.into(),
-            application_hash: b.application_hash.encode_hex(),
-            consensus_parameters_version: b.consensus_parameters_version.into(),
-            state_transition_bytecode_version: b.state_transition_bytecode_version.into(),
-            message_outbox_root: b.message_outbox_root.encode_hex(),
-            event_inbox_root: b.event_inbox_root.encode_hex(),
+            id: b
+                .id
+                .expect("Cannot convert due to block id absence")
+                .encode_hex(),
+            da_height: b
+                .da_height
+                .expect("Cannot convert due to da height absence")
+                .into(),
+            transactions_count: b
+                .transactions_count
+                .expect("Cannot convert due to tx count absence")
+                .encode_hex(),
+            message_receipt_count: b
+                .message_receipt_count
+                .expect("Cannot convert due to message receipt absence")
+                .encode_hex(),
+            transactions_root: b
+                .transactions_root
+                .expect("Cannot convert due to transaction root absence")
+                .encode_hex(),
+            height: b
+                .height
+                .expect("Cannot convert due to block height absence")
+                .into(),
+            prev_root: b
+                .prev_root
+                .expect("Cannot convert due to prev root absence")
+                .encode_hex(),
+            time: b.time.expect("Cannot convert due to time absence").into(),
+            application_hash: b
+                .application_hash
+                .expect("Cannot convert due to app hash absence")
+                .encode_hex(),
+            consensus_parameters_version: b
+                .consensus_parameters_version
+                .expect("Cannot convert due to consensus parameter version absence")
+                .into(),
+            state_transition_bytecode_version: b
+                .state_transition_bytecode_version
+                .expect("Cannot convert due to state transition bytecode version absence")
+                .into(),
+            message_outbox_root: b
+                .message_outbox_root
+                .expect("Cannot convert due to message outbox root absence")
+                .encode_hex(),
+            event_inbox_root: b
+                .event_inbox_root
+                .expect("Cannot convert due to event inbox absence")
+                .encode_hex(),
         }
     }
 }
@@ -347,8 +383,14 @@ impl From<hyperfuel_format::BlockHeader> for Block {
 impl From<hyperfuel_format::Transaction> for Transaction {
     fn from(t: hyperfuel_format::Transaction) -> Self {
         Self {
-            block_height: t.block_height.into(),
-            id: t.id.encode_hex(),
+            block_height: t
+                .block_height
+                .expect("Cannot convert due to block height absence")
+                .into(),
+            id: t
+                .id
+                .expect("Cannot convert due to tx id absence")
+                .encode_hex(),
             input_asset_ids: t
                 .input_asset_ids
                 .map(|d| d.into_iter().map(|i| i.encode_hex()).collect()),
@@ -370,14 +412,17 @@ impl From<hyperfuel_format::Transaction> for Transaction {
             mint_asset_id: t.mint_asset_id.map(|d| d.encode_hex()),
             tx_pointer_block_height: t.tx_pointer_block_height.map(|t| t.into()),
             tx_pointer_tx_index: t.tx_pointer_tx_index.map(|t| t.into()),
-            tx_type: t.tx_type.to_u8(),
+            tx_type: t.tx_type.expect("Cannot convert due to tx type absence").0,
             output_contract_input_index: t.output_contract_input_index.map(|t| t.into()),
             output_contract_balance_root: t.output_contract_balance_root.map(|d| d.encode_hex()),
             output_contract_state_root: t.output_contract_state_root.map(|d| d.encode_hex()),
             witnesses: t.witnesses.map(|d| d.encode_hex()),
             receipts_root: t.receipts_root.map(|d| d.encode_hex()),
-            status: t.status.as_u8(),
-            time: t.time.into(),
+            status: t
+                .status
+                .expect("Cannot convert due to tx status absence")
+                .to_u8(),
+            time: t.time.expect("Cannot convert due to time absence").into(),
             reason: t.reason,
             script: t.script.map(|d| d.encode_hex()),
             script_data: t.script_data.map(|d| d.encode_hex()),
@@ -409,12 +454,24 @@ impl From<hyperfuel_format::Transaction> for Transaction {
 impl From<hyperfuel_format::Receipt> for Receipt {
     fn from(r: hyperfuel_format::Receipt) -> Self {
         Self {
-            receipt_index: r.receipt_index.into(),
+            receipt_index: r
+                .receipt_index
+                .expect("Cannot convert due to receipt index absence")
+                .into(),
             root_contract_id: r.root_contract_id.map(|d| d.encode_hex()),
-            tx_id: r.tx_id.encode_hex(),
-            tx_status: r.tx_status.as_u8(),
-            tx_type: r.tx_type.to_u8(),
-            block_height: r.block_height.into(),
+            tx_id: r
+                .tx_id
+                .expect("Cannot convert due to tx id absence")
+                .encode_hex(),
+            tx_status: r
+                .tx_status
+                .expect("Cannot convert due to tx status absence")
+                .to_u8(),
+            tx_type: r.tx_type.expect("Cannot convert due to tx type absence").0,
+            block_height: r
+                .block_height
+                .expect("Cannot convert due to block height absence")
+                .into(),
             pc: r.pc.map(|d| d.into()),
             is: r.is.map(|d| d.into()),
             to: r.to.map(|d| d.encode_hex()),
@@ -433,7 +490,10 @@ impl From<hyperfuel_format::Receipt> for Receipt {
             rc: r.rc.map(|d| d.into()),
             rd: r.rd.map(|d| d.into()),
             len: r.len.map(|d| d.into()),
-            receipt_type: r.receipt_type.to_u8(),
+            receipt_type: r
+                .receipt_type
+                .expect("Cannot convert due to receipt type absence")
+                .to_u8(),
             result: r.result.map(|d| d.into()),
             gas_used: r.gas_used.map(|d| d.into()),
             data: r.data.map(|d| d.encode_hex()),
@@ -449,11 +509,23 @@ impl From<hyperfuel_format::Receipt> for Receipt {
 impl From<hyperfuel_format::Input> for Input {
     fn from(i: hyperfuel_format::Input) -> Self {
         Self {
-            tx_id: i.tx_id.encode_hex(),
-            tx_status: i.tx_status.as_u8(),
-            tx_type: i.tx_type.to_u8(),
-            block_height: i.block_height.into(),
-            input_type: i.input_type.as_u8(),
+            tx_id: i
+                .tx_id
+                .expect("Cannot convert due to tx id absence")
+                .encode_hex(),
+            tx_status: i
+                .tx_status
+                .expect("Cannot convert due to tx status absence")
+                .to_u8(),
+            tx_type: i.tx_type.expect("Cannot convert due to tx type absence").0,
+            block_height: i
+                .block_height
+                .expect("Cannot convert due to block height absence")
+                .into(),
+            input_type: i
+                .input_type
+                .expect("Cannot convert due to input type absence")
+                .as_u8(),
             utxo_id: i.utxo_id.map(|d| d.encode_hex()),
             owner: i.owner.map(|d| d.encode_hex()),
             amount: i.amount.map(|d| d.into()),
@@ -478,11 +550,23 @@ impl From<hyperfuel_format::Input> for Input {
 impl From<hyperfuel_format::Output> for Output {
     fn from(o: hyperfuel_format::Output) -> Self {
         Self {
-            tx_id: o.tx_id.encode_hex(),
-            tx_status: o.tx_status.as_u8(),
-            tx_type: o.tx_type.to_u8(),
-            block_height: o.block_height.into(),
-            output_type: o.output_type.as_u8(),
+            tx_id: o
+                .tx_id
+                .expect("Cannot convert due to tx id absence")
+                .encode_hex(),
+            tx_status: o
+                .tx_status
+                .expect("Cannot convert due to tx status absence")
+                .to_u8(),
+            tx_type: o.tx_type.expect("Cannot convert due to tx type absence").0,
+            block_height: o
+                .block_height
+                .expect("Cannot convert due to block height absence")
+                .into(),
+            output_type: o
+                .output_type
+                .expect("Cannot convert due to output type absence")
+                .as_u8(),
             to: o.to.map(|d| d.encode_hex()),
             amount: o.amount.map(|d| d.into()),
             asset_id: o.asset_id.map(|d| d.encode_hex()),

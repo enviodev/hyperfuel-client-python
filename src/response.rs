@@ -129,17 +129,47 @@ impl QueryResponseDataTyped {
     }
 }
 
-impl From<hyperfuel_client::QueryResponseTyped> for QueryResponseTyped {
-    fn from(r: hyperfuel_client::QueryResponseTyped) -> Self {
+impl From<hyperfuel_client::QueryResponse> for QueryResponseTyped {
+    fn from(r: hyperfuel_client::QueryResponse) -> Self {
         let archive_height = r.archive_height;
         let next_block = r.next_block;
         let total_execution_time = r.total_execution_time;
         let data = QueryResponseDataTyped {
-            blocks: r.data.blocks.into_iter().map(|b| b.into()).collect(),
-            transactions: r.data.transactions.into_iter().map(|b| b.into()).collect(),
-            receipts: r.data.receipts.into_iter().map(|b| b.into()).collect(),
-            inputs: r.data.inputs.into_iter().map(|b| b.into()).collect(),
-            outputs: r.data.outputs.into_iter().map(|b| b.into()).collect(),
+            blocks: r
+                .data
+                .blocks
+                .into_iter()
+                .flatten()
+                .map(|b| b.into())
+                .collect(),
+            transactions: r
+                .data
+                .transactions
+                .into_iter()
+                .flatten()
+                .map(|b| b.into())
+                .collect(),
+            receipts: r
+                .data
+                .receipts
+                .into_iter()
+                .flatten()
+                .map(|b| b.into())
+                .collect(),
+            inputs: r
+                .data
+                .inputs
+                .into_iter()
+                .flatten()
+                .map(|b| b.into())
+                .collect(),
+            outputs: r
+                .data
+                .outputs
+                .into_iter()
+                .flatten()
+                .map(|b| b.into())
+                .collect(),
         };
 
         Self {
@@ -226,19 +256,33 @@ impl LogContext {
     }
 }
 
-impl From<hyperfuel_client::LogResponse> for LogResponse {
-    fn from(r: hyperfuel_client::LogResponse) -> Self {
+impl From<hyperfuel_client::QueryResponse> for LogResponse {
+    fn from(r: hyperfuel_client::QueryResponse) -> Self {
         let archive_height = r.archive_height;
         let next_block = r.next_block;
         let total_execution_time = r.total_execution_time;
         let data = r
             .data
+            .receipts
             .into_iter()
+            .flatten()
             .map(|c| LogContext {
-                block_height: c.block_height.into(),
-                tx_id: c.tx_id.encode_hex(),
-                receipt_index: c.receipt_index.into(),
-                receipt_type: c.receipt_type.to_u8(),
+                block_height: c
+                    .block_height
+                    .expect("Cannot convert due to block height absence")
+                    .into(),
+                tx_id: c
+                    .tx_id
+                    .expect("Cannot convert due to tx id absence")
+                    .encode_hex(),
+                receipt_index: c
+                    .receipt_index
+                    .expect("Cannot convert due to receipt index absence")
+                    .into(),
+                receipt_type: c
+                    .receipt_type
+                    .expect("Cannot convert due to receipt type absence")
+                    .to_u8(),
                 contract_id: c.contract_id.map(|i| i.encode_hex()),
                 root_contract_id: c.root_contract_id.map(|i| i.encode_hex()),
                 ra: c.ra.map(|i| i.into()),
